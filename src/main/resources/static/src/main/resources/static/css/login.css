@@ -1,0 +1,325 @@
+/* ===== 1. DESIGN TOKENS ===== */
+:root {
+    --plum: #743a48;
+    /* heading, Log in button */
+    --plum-dark: #5e2e3a;
+    /* button hover */
+    --rose: #dd8590;
+    /* the glow behind the card */
+    --blush: #fadcdc;
+    /* right side of the page background */
+    --peach: #fdeee3;
+    /* left side of the page background */
+    --text: #4a2f36;
+    --muted: #6a565b;
+    /* placeholders and small text (a bit darker than the
+                             prototype so it stays readable) */
+    --glass: rgba(255, 255, 255, 0.55);
+    /* see-through white for the card */
+    --field: rgba(190, 170, 176, 0.35);
+    /* see-through gray-pink for inputs */
+    --error: #9b1c31;
+
+    --font: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+
+/* ===== 2. BASE RESET ===== */
+/* border-box makes width INCLUDE padding, so "100% wide" really means 100%. */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    /* remove the browser's default margin */
+    font-family: var(--font);
+    color: var(--text);
+    line-height: 1.5;
+}
+
+p {
+    margin: 0;
+}
+
+/* The hidden attribute must always win over other display rules. */
+[hidden] {
+    display: none;
+}
+
+/* Hides text from eyes but keeps it for screen readers. */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* Outline for keyboard users. :focus-visible appears for keyboard focus,
+   not mouse clicks. Never remove it. */
+:focus-visible {
+    outline: 3px solid var(--plum);
+    outline-offset: 2px;
+}
+
+
+/* ===== 3. PAGE BACKGROUND + WATERMARK ===== */
+.auth {
+    position: relative;
+    /* so the watermark can position itself inside */
+    min-height: 100vh;
+    /* vh = percent of the window height */
+    display: grid;
+    place-items: center;
+    /* centres the card both ways in one line */
+    padding: 24px;
+    overflow: hidden;
+    /* hide the watermark where it runs off screen */
+
+    /* Two backgrounds layered: the first one listed is on TOP.
+     1) a rose glow in the middle, fading to transparent
+     2) a left-to-right gradient from peach to blush */
+    background:
+        radial-gradient(ellipse 65% 60% at 50% 50%, rgba(221, 133, 144, 0.9), transparent 75%),
+        linear-gradient(90deg, var(--peach), var(--blush));
+}
+
+/* The huge faded logo behind the card. ::before makes a decorative element
+   with no extra HTML. The path is relative to THIS css file. If the logo file
+   is missing, the page still works; you just don't see the watermark. */
+.auth::before {
+    content: "";
+    /* a pseudo-element needs content to appear */
+    position: absolute;
+    inset: 0;
+    /* shorthand for top/right/bottom/left: 0 */
+    background: url("images/logo.png") center / min(1100px, 120vw) no-repeat;
+    opacity: 0.22;
+    /* faded so it stays in the background */
+    pointer-events: none;
+    /* clicks pass straight through it */
+}
+
+
+/* ===== 4. THE FROSTED-GLASS CARD ===== */
+.auth__card {
+    position: relative;
+    /* keeps the card above the watermark */
+    width: 100%;
+    max-width: 760px;
+    /* never wider than this; shrinks on phones */
+    border-radius: 48px;
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    /* blurs whatever is behind the card */
+    -webkit-backdrop-filter: blur(10px);
+    /* older Safari needs this prefixed version */
+    padding: 40px 24px 48px;
+    display: flex;
+    flex-direction: column;
+    /* stack logo above form */
+    align-items: center;
+    /* centre them horizontally */
+}
+
+.auth__logo {
+    width: 160px;
+    height: auto;
+    /* keeps the logo's proportions */
+}
+
+.auth__form {
+    width: 100%;
+    max-width: 340px;
+    /* the form column is much narrower than the card */
+    margin-top: 8px;
+}
+
+.auth__title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--plum);
+    margin: 0 0 40px;
+}
+
+
+/* ===== 5. FORM FIELDS ===== */
+.field {
+    position: relative;
+    /* the icon and eye button position against this */
+    margin-bottom: 16px;
+}
+
+.field input {
+    width: 100%;
+    height: 48px;
+    /* tall enough to tap comfortably on a phone */
+    padding: 0 48px 0 46px;
+    /* room for the icon (left) and eye button (right) */
+    border: none;
+    border-radius: 999px;
+    /* a huge radius = fully rounded ends (a pill) */
+    background: var(--field);
+    font: inherit;
+    /* inputs ignore the page font unless told to inherit */
+    color: var(--text);
+}
+
+.field input::placeholder {
+    color: var(--muted);
+    font-style: italic;
+    /* the prototype uses italic placeholders */
+}
+
+.field__icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    /* top: 50% alone puts the TOP edge at the middle;
+                                      this shifts it up by half its own height */
+    display: flex;
+    color: var(--muted);
+    pointer-events: none;
+    /* clicks go to the input underneath */
+}
+
+.field__toggle {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    padding: 8px;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+}
+
+/* The slash through the eye shows only while the password is visible.
+   aria-pressed is used for both accessibility AND this visual change. */
+.eye-slash {
+    display: none;
+}
+.field__toggle[aria-pressed="true"] .eye-slash {
+    display: inline;
+}
+
+.auth__row {
+    display: flex;
+    justify-content: space-between;
+    /* checkbox on the left, link on the right */
+    align-items: center;
+    margin: 4px 4px 24px;
+    font-size: 0.85rem;
+}
+
+.check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    cursor: pointer;
+}
+.check input {
+    accent-color: var(--plum);
+}
+/* colors the checkbox itself */
+
+.auth__link {
+    color: var(--muted);
+}
+.auth__link:hover {
+    color: var(--plum);
+}
+
+.form-error {
+    color: var(--error);
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+}
+
+
+/* ===== 6. BUTTONS + DIVIDER ===== */
+/* .btn is the shared shape. It is used on both a <button> and an <a>, which is
+   why it sets display:flex and text-decoration:none. */
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 48px;
+    border: none;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 0.95rem;
+    text-decoration: none;
+    /* removes the link underline on the Sign up link */
+    cursor: pointer;
+}
+
+.btn--primary {
+    background: var(--plum);
+    color: #fff;
+}
+.btn--primary:hover {
+    background: var(--plum-dark);
+}
+
+.btn--secondary {
+    background: var(--field);
+    color: var(--text);
+}
+.btn--secondary:hover {
+    background: rgba(190, 170, 176, 0.55);
+}
+
+/* "Or" with a line on each side. The two lines are ::before and ::after
+   pseudo-elements that stretch (flex: 1) to fill the space left of and
+   right of the word. */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    /* each line takes an equal share of the free space */
+    height: 1px;
+    background: currentColor;
+    /* same color as the text, so it matches */
+    opacity: 0.5;
+}
+
+.auth__note {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+
+/* ===== 7. RESPONSIVE (phones) ===== */
+@media (max-width: 600px) {
+    .auth {
+        padding: 12px;
+    }
+    .auth__card {
+        border-radius: 32px;
+        padding: 28px 16px 32px;
+    }
+    .auth__logo {
+        width: 120px;
+    }
+}
