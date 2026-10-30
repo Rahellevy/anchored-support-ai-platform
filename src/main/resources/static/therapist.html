@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Anchored Clinician Portal – Your patients</title>
+
+    <link rel="stylesheet" href="therapist.css" />
+
+</head>
+
+<body>
+
+    <!-- ===== 1. HEADER ===== -->
+    <header class="header">
+        <div class="brand">
+
+            <img class="brand__logo" src="images/logo.png" alt="Anchored Support Services logo" width="60"
+                height="60" />
+            <span class="brand__name">Anchored</span>
+            <span class="brand__sub">Clinician portal</span>
+        </div>
+
+        <nav class="nav" aria-label="Main">
+
+            <a href="#" aria-current="page">Patients</a>
+            <a href="#">Alerts</a>
+        </nav>
+
+        <div class="user-area">
+
+            <button class="bell" aria-label="Notifications, 2 unread">
+
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                    <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />
+                </svg>
+                <span class="bell__badge">2</span>
+            </button>
+            <span class="user-name">Dr. Morgan Hale · Therapist</span>
+        </div>
+    </header>
+
+    <!-- ===== 2. SAFETY BANNER ===== -->
+    <div class="banner" role="note">
+        Synthetic data only. Proof of concept. This system is not a crisis or emergency service.
+    </div>
+
+    <main class="page">
+
+        <!-- ===== 3. PAGE INTRO + SEARCH ===== -->
+        <section class="intro">
+            <div>
+                <p class="eyebrow"></p>
+                <h1>Your patients</h1>
+                <p class="intro__text">
+                    AI conversation activity for patients assigned to you, sorted by what needs review.
+                </p>
+            </div>
+
+            <div class="search">
+                <label for="patient-search">Search patients</label>
+                <input id="patient-search" type="search" placeholder="Name" />
+            </div>
+        </section>
+
+        <!-- ===== 4. SUMMARY CARDS ===== -->
+        <section class="cards" aria-label="Summary">
+            <article class="card">
+                <h2 class="card__title">Flags awaiting review</h2>
+                <p class="card__number">2</p>
+                <p>
+                    <span class="badge badge--high">1 High</span>
+                    <span class="badge badge--medium">1 Medium</span>
+                </p>
+            </article>
+
+            <article class="card">
+                <h2 class="card__title">Unreviewed conversations</h2>
+                <p class="card__number">5</p>
+                <p class="card__note">Across 2 patients</p>
+            </article>
+
+            <article class="card">
+                <h2 class="card__title">Patients with AI activity, last 7 days</h2>
+                <p class="card__number">4 <span class="card__of">of 5</span></p>
+                <p class="card__note">10 conversations total</p>
+            </article>
+        </section>
+
+        <!-- ===== 5. PATIENT TABLE ===== -->
+        <section class="table-wrap">
+            <table class="patients">
+                <thead>
+                    <tr>
+                        <th scope="col">Patient</th>
+                        <th scope="col">Last AI conversation</th>
+                        <th scope="col">Last 7 days</th>
+                        <th scope="col">Flags</th>
+                        <th scope="col">Review status</th>
+                        <th scope="col">Last reviewed</th>
+                        <th scope="col"><span class="visually-hidden">Actions</span></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="patient">
+                                <span class="avatar" aria-hidden="true">JA</span>
+                                <div><strong>Jordan Avery</strong><br /><span class="muted">Synthetic patient</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>Today, 9:12 AM</td>
+                        <td>4 conversations</td>
+                        <td><span class="badge badge--high">1 High</span></td>
+                        <td><span class="badge badge--pending">3 unreviewed</span></td>
+                        <td>Oct 1</td>
+                        <td><button class="btn">Open</button></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <div class="patient">
+                                <span class="avatar" aria-hidden="true">SR</span>
+                                <div><strong>Sam Rivera</strong><br /><span class="muted">Synthetic patient</span></div>
+                            </div>
+                        </td>
+                        <td>Yesterday, 8:40 PM</td>
+                        <td>2 conversations</td>
+                        <td><span class="badge badge--medium">1 Medium</span></td>
+                        <td><span class="badge badge--pending">2 unreviewed</span></td>
+                        <td>Sep 30</td>
+                        <td><button class="btn">Open</button></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <div class="patient">
+                                <span class="avatar" aria-hidden="true">PN</span>
+                                <div><strong>Priya Nair</strong><br /><span class="muted">Synthetic patient</span></div>
+                            </div>
+                        </td>
+                        <td>Mon, 7:05 PM</td>
+                        <td>3 conversations</td>
+                        <td><span class="badge badge--none">None</span></td>
+                        <td><span class="badge badge--reviewed">Reviewed</span></td>
+                        <td>Today</td>
+                        <td><button class="btn">Open</button></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <div class="patient">
+                                <span class="avatar" aria-hidden="true">ML</span>
+                                <div><strong>Marcus Lee</strong><br /><span class="muted">Synthetic patient</span></div>
+                            </div>
+                        </td>
+                        <td>6 days ago</td>
+                        <td>1 conversation</td>
+                        <td><span class="badge badge--none">None</span></td>
+                        <td><span class="badge badge--reviewed">Reviewed</span></td>
+                        <td>Oct 2</td>
+                        <td><button class="btn">Open</button></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <div class="patient">
+                                <span class="avatar" aria-hidden="true">ET</span>
+                                <div><strong>Elena Torres</strong><br /><span class="muted">Synthetic patient</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>No AI activity</td>
+                        <td>0 conversations</td>
+                        <td><span class="badge badge--none">None</span></td>
+                        <td><span class="badge badge--nothing">Nothing to review</span></td>
+                        <td>—</td>
+                        <td><button class="btn">Open</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ===== 6. FOOTER DISCLAIMER ===== -->
+        <footer class="disclaimer">
+            <p>
+                Flags come from rules configured by Anchored Support Services. They can include false
+                positives and can miss concerns, so they are not a clinical safety guarantee.
+            </p>
+        </footer>
+
+    </main>
+</body>
+
+</html>
