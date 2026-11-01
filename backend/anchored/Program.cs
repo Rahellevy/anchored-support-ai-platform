@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using anchored.Data;
+using anchored.Endpoints.Auth;
 using anchored.Setup;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +41,6 @@ app.UseAuthorization();
 
 // Endpoints:
 var api = app.MapGroup("/api");
-
+api.MapAuthEndpoints();
 
 app.Run();
