@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversation – Jordan Avery – Anchored Clinician Portal</title>
+    
+    <link rel="stylesheet" href="patient-conversation.css">
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="brand">
+            <img class="logo" src="images/logo.png" alt="Anchored Support Services logo" width="60" height="60">
+            <span class="brand-name">Anchored</span>
+            <span class="brand-sub">Clinician portal</span>
+        </div>
+
+        <nav class="nav" aria-label="Main">
+            <a href="index.html" aria-current="page">Patients</a>
+            <a href="#">Alerts</a>
+        </nav>
+
+        <div class="user-area">
+            <button class="bell" aria-label="Notifications, 2 unread">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                    <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />
+                </svg>
+                <span class="bell-count">2</span>
+            </button>
+            <span class="user-name">Dr. Morgan Hale · Therapist</span>
+        </div>
+    </header>
+
+    <div class="banner" role="note">
+        Synthetic data only. Proof of concept. This system is not a crisis or emergency service.
+    </div>
+
+    <main class="page">
+
+        <a class="back-link" href="#">← Jordan Avery's timeline</a>
+
+        <p class="eyebrow">Original conversation · Unedited</p>
+        <h1 class="convo-title">Today, 9:02–9:24 AM</h1>
+        <p class="convo-meta">Jordan Avery (synthetic) · 14 messages · Stored exactly as exchanged</p>
+
+        <div class="layout">
+
+            <!-- ===== THE ORIGINAL TRANSCRIPT ===== -->
+            <section class="chat" aria-label="Original conversation">
+
+                <div class="earlier">
+                    <button class="btn" id="show-earlier" type="button" aria-expanded="false"
+                        aria-controls="earlier-messages">
+                        Show 6 earlier messages
+                    </button>
+                </div>
+
+                <ol class="messages">
+
+                    <!-- The 6 earlier messages stay hidden until the button is clicked. -->
+                    <li id="earlier-messages" hidden>
+                        <ol class="messages">
+                            <li class="message from-ai">
+                                <p class="meta"><strong>AI assistant</strong> · 9:02 AM</p>
+                                <p class="bubble">Hi Jordan. I'm an AI assistant, not a person or a therapist. Your
+                                    therapist can see this conversation. What would you like to talk about today?</p>
+                            </li>
+                            <li class="message from-patient">
+                                <p class="meta"><strong>Patient</strong> · 9:03 AM</p>
+                                <p class="bubble">Just checking in. This week has been a lot.</p>
+                            </li>
+                            <li class="message from-ai">
+                                <p class="meta"><strong>AI assistant</strong> · 9:03 AM</p>
+                                <p class="bubble">Thanks for checking in. What has been the hardest part of the week?
+                                </p>
+                            </li>
+                            <li class="message from-patient">
+                                <p class="meta"><strong>Patient</strong> · 9:05 AM</p>
+                                <p class="bubble">Sleep, mostly. I keep waking up early.</p>
+                            </li>
+                            <li class="message from-ai">
+                                <p class="meta"><strong>AI assistant</strong> · 9:06 AM</p>
+                                <p class="bubble">Waking up early can leave you feeling worn down. Has anything changed
+                                    in your routine lately?</p>
+                            </li>
+                            <li class="message from-patient">
+                                <p class="meta"><strong>Patient</strong> · 9:08 AM</p>
+                                <p class="bubble">More hours at work, I think.</p>
+                            </li>
+                        </ol>
+                    </li>
+
+                    <li class="message from-patient">
+                        <p class="meta"><strong>Patient</strong> · 9:10 AM</p>
+                        <p class="bubble">Work has been nonstop and I keep cancelling plans with friends because I'm too
+                            tired.</p>
+                    </li>
+                    <li class="message from-ai">
+                        <p class="meta"><strong>AI assistant</strong> · 9:10 AM</p>
+                        <p class="bubble">That sounds exhausting. Pulling back from friends when you're drained is
+                            common. Would it help to talk through what's taking the most energy right now?</p>
+                    </li>
+                    <li class="message from-patient">
+                        <p class="meta"><strong>Patient</strong> · 9:12 AM</p>
+                        <p class="bubble">Mostly the deadlines. I feel behind on everything.</p>
+                    </li>
+                    <li class="message from-ai">
+                        <p class="meta"><strong>AI assistant</strong> · 9:12 AM</p>
+                        <p class="bubble">Feeling behind can make everything seem heavier. Some people find it helps to
+                            pick one small task to finish today. Your therapist may also have strategies that fit your
+                            situation.</p>
+                    </li>
+
+                    <!-- The flagged message. The tag under it says WHY, in words, not only color. -->
+                    <li class="message from-patient flagged">
+                        <p class="meta"><strong>Patient</strong> · 9:14 AM</p>
+                        <p class="bubble">Honestly I don't see the point in trying anymore.</p>
+                        <span class="badge high">Flagged · Suicide risk · High</span>
+                    </li>
+                    <li class="message from-ai">
+                        <p class="meta"><strong>AI assistant</strong> · 9:14 AM</p>
+                        <p class="bubble">I'm glad you told me. I'm an AI and can't provide crisis support. If you are
+                            in danger or thinking about harming yourself, call or text 988, or call 911. Your therapist
+                            can see this conversation. Would you like to talk about what's making things feel this way?
+                        </p>
+                    </li>
+                    <li class="message from-patient">
+                        <p class="meta"><strong>Patient</strong> · 9:16 AM</p>
+                        <p class="bubble">I'm not going to do anything. I'm just tired of feeling like this.</p>
+                    </li>
+                    <li class="message from-ai">
+                        <p class="meta"><strong>AI assistant</strong> · 9:17 AM</p>
+                        <p class="bubble">Thank you for letting me know. Feeling worn down like this is worth bringing
+                            to your next session. In the meantime, would a short grounding exercise from your practice's
+                            resources help?</p>
+                    </li>
+                </ol>
+            </section>
+
+            <!-- ===== SIDEBAR: FLAG DETAILS + AI SUMMARY ===== -->
+            <aside class="side">
+
+                <section class="side-card flag-card" aria-labelledby="flag-heading">
+                    <div class="side-head">
+                        <h2 id="flag-heading">Flag details</h2>
+                        <span class="badge open" id="flag-status">Open</span>
+                    </div>
+
+                    <dl class="details">
+                        <dt>Severity</dt>
+                        <dd><span class="badge high">High</span></dd>
+
+                        <dt>Category</dt>
+                        <dd>Suicide risk (H1)</dd>
+
+                        <dt>Detected by</dt>
+                        <dd>Phrase rule H1-03 and AI check (both matched)</dd>
+
+                        <dt>Message</dt>
+                        <dd>9:14 AM, plus 1 related message at 9:16 AM</dd>
+
+                        <dt>Notified</dt>
+                        <dd>You, in-app and email, 9:14 AM</dd>
+                    </dl>
+
+                    <button class="btn btn-fill" id="acknowledge" type="button">Acknowledge flag</button>
+                    <button class="btn" id="mark-reviewed" type="button">Mark conversation reviewed</button>
+                    <p class="status-line" id="action-status" role="status"></p>
+                </section>
+
+                <section class="side-card" aria-labelledby="summary-heading">
+                    <h2 class="visually-hidden" id="summary-heading">AI-generated summary</h2>
+                    <span class="badge unreviewed">AI-generated summary</span>
+                    <p class="summary-text">
+                        Patient described feeling overwhelmed by work deadlines and cancelling plans with
+                        friends. One message was flagged for suicide risk…
+                    </p>
+                    <a href="#">View in timeline</a>
+                </section>
+
+                <p class="audit-note">Your viewing of this conversation is recorded in the audit log.</p>
+            </aside>
+
+        </div>
+    </main>
+
+    <script src="conversation.js"></script>
+</body>
+
+</html>
