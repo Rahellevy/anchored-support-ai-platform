@@ -1,0 +1,133 @@
+/* Styles for the therapist dashboard's summary cards and patient table. */
+
+/* ----- Summary cards ----- */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.card {
+  padding: 24px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.cardTitle {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.cardNumber {
+  margin-bottom: 8px;
+  font-size: 2.25rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--color-plum);
+}
+
+.cardOf {
+  font-size: 1.1rem;
+  color: var(--color-text-muted);
+}
+
+.cardNote {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+/* ----- Patient table ----- */
+.tableWrap {
+  /* relative: keeps the visually-hidden "Actions" header inside this scroll box,
+     otherwise it widens the whole page on phones */
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  overflow-x: auto; /* table scrolls sideways on small screens */
+}
+
+.table {
+  width: 100%;
+  min-width: 880px;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 18px 16px;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.table td {
+  padding: 14px 16px;
+  vertical-align: middle;
+  border-top: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+/* extra padding on the outer columns; action column right-aligned */
+.table th:first-child,
+.table td:first-child {
+  padding-left: 24px;
+}
+.table th:last-child,
+.table td:last-child {
+  padding-right: 24px;
+  text-align: right;
+}
+
+.table td.empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+/* ----- Patient cell: avatar + name ----- */
+.patient {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-blush);
+  color: var(--color-plum);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.patientName {
+  display: block;
+  font-weight: 500;
+}
+
+.patientSub {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+/* Several badges side by side (e.g. "1 High" + "1 Medium") */
+.badgeGroup {
+  display: inline-flex;
+  gap: 6px;
+}
+
+@media (max-width: 800px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}

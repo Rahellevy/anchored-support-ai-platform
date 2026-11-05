@@ -1,7 +1,9 @@
 import axios from "axios"
 
 export const httpClient = axios.create({
-    baseURL: import.meta.env.API_URL
+    baseURL: "/api",
+    withCredentials: true,
+    timeout: 15 * 1000,
 })
 
 httpClient.interceptors.response.use(

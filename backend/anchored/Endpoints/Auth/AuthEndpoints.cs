@@ -19,7 +19,7 @@ public static class AuthEndpoints
         group.MapPost("/register", Register).AllowAnonymous();
         group.MapPost("/login", Login).AllowAnonymous();
         group.MapPost("logout", Logout).RequireAuthorization();
-        group.MapPost("/me", Me).RequireAuthorization();
+        group.MapGet("/me", Me).RequireAuthorization();
 
         return api;
     }

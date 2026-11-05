@@ -57,5 +57,18 @@ public class TherapistProfileConfiguration : IEntityTypeConfiguration<TherapistP
     }
 }
 
+public class AdminProfileConfiguration : IEntityTypeConfiguration<AdminProfile>
+{
+    public void Configure(EntityTypeBuilder<AdminProfile> builder)
+    {
+        builder.ToTable("admin_profiles");
+        builder.HasKey(a => a.UserId);
+        builder.HasOne(a => a.User)
+            .WithOne(u => u.AdminProfile)
+            .HasForeignKey<AdminProfile>(a => a.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
 
 
