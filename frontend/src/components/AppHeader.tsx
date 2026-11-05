@@ -1,69 +1,83 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../assets/logo.png'
+import { useAuth } from '../hooks/useAuth'
+import { ROLE_LABELS } from '../utils/roles'
 import { Button } from './Button'
 import { BellIcon } from './Icons'
 import styles from './AppHeader.module.css'
-import {useAuth} from "../hooks/useAuth.ts";
 
 /**
  * Top bar for a portal: logo + portal name, page links, notifications and the signed-in user.
- *
- *   <AppHeader
- *     subtitle="Clinician portal"
- *     links={[{ to: '/therapist', label: 'Patients' }]}
- *     notificationCount={2}
- *   />
+ * Usually rendered by PortalLayout, not directly by pages.
  */
-interface HeaderLink {
+export interface HeaderLink {
   to: string
   label: string
+  /** Extra URL prefixes that should also highlight this link (e.g. conversations under "Patients"). */
+  alsoActiveFor?: string[]
 }
 
-interface AppHeaderProps {
+export interface AppHeaderProps {
   subtitle: string
   links: HeaderLink[]
+  /** Where the bell goes. Leave out to hide the bell (admin portal). */
+  notificationsTo?: string
   notificationCount?: number
+  /** Smaller brand text and links, for portals with many nav links. */
+  compact?: boolean
 }
 
-export const AppHeader = ({ subtitle, links, notificationCount = 0 }: AppHeaderProps) => {
+export function AppHeader({ subtitle, links, notificationsTo, notificationCount = 0, compact = false }: AppHeaderProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-    const handleLogout = async () => {
+  const { pathname } = useLocation()
+
+  const isActive = (link: HeaderLink) =>
+    pathname === link.to || (link.alsoActiveFor ?? []).some((prefix) => pathname.startsWith(prefix))
+
+  async function handleLogout() {
     await logout()
     navigate('/login', { replace: true })
   }
 
   return (
-    <header className={styles.header}>
+    <header className={compact ? `${styles.header} ${styles.compact}` : styles.header}>
       <div className={styles.brand}>
         <img className={styles.logo} src={logo} alt="Anchored Support Services logo" width={60} height={60} />
-        <span className={styles.name}>Anchored</span>
-        <span className={styles.subtitle}>{subtitle}</span>
+        {/* Name and portal name stacked, so the brand stays narrow enough for a centered nav */}
+        <div>
+          <span className={styles.name}>Anchored Support Services</span>
+          <span className={styles.subtitle}>{subtitle}</span>
+        </div>
       </div>
 
       <nav className={styles.nav} aria-label="Main">
-        {links.map((link) => (
-          // `end` = only highlight on an exact URL match
-          <NavLink
-            key={link.to}
-            to={link.to}
-            end
-            className={({ isActive }) => (isActive ? `${styles.navLink} ${styles.active}` : styles.navLink)}
-          >
-            {link.label}
-          </NavLink>
-        ))}
+        {links.map((link) => {
+          const active = isActive(link)
+          return (
+            <Link
+              key={link.to}
+              to={link.to}
+              className={active ? `${styles.navLink} ${styles.active}` : styles.navLink}
+              aria-current={active ? 'page' : undefined}
+            >
+              {link.label}
+            </Link>
+          )
+        })}
       </nav>
 
       <div className={styles.userArea}>
-        <button className={styles.bell} aria-label={`Notifications, ${notificationCount} unread`}>
-          <BellIcon size={22} />
-          {notificationCount > 0 && <span className={styles.bellCount}>{notificationCount}</span>}
-        </button>
+        {notificationsTo && (
+          <Link to={notificationsTo} className={styles.bell} aria-label={`Alerts, ${notificationCount} open`}>
+            <BellIcon size={22} />
+            {notificationCount > 0 && <span className={styles.bellCount}>{notificationCount}</span>}
+          </Link>
+        )}
 
         {user && (
           <span className={styles.userName}>
-            {user.firstName ?? user.email} · {user.roles.join(', ')}
+            {user.firstName} {user.lastName} · {user.roles.map((role) => ROLE_LABELS[role]).join(', ')}
           </span>
         )}
 

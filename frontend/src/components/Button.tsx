@@ -20,7 +20,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   to?: string
 }
 
-export const Button = ({
+export function Button({
   variant = 'primary',
   fullWidth = false,
   to,
@@ -28,7 +28,7 @@ export const Button = ({
   type = 'button',
   children,
   ...buttonProps
-}: ButtonProps) => {
+}: ButtonProps) {
   const classes = [styles.button, styles[variant], fullWidth && styles.fullWidth, className]
     .filter(Boolean)
     .join(' ')

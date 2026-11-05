@@ -1,8 +1,13 @@
-/* Three columns: brand | nav (centered) | user area */
+/*
+ * Three columns: brand | nav | user area.
+ * The two outer columns are always the same width (minmax(0, 1fr)), so the nav sits at the
+ * true center of the page no matter how long the brand name or user name is.
+ */
 .header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
+  column-gap: 24px;
   padding: 10px 48px;
   background: var(--color-surface-strong);
   border-bottom: 1px solid var(--color-border);
@@ -15,18 +20,24 @@
   gap: 12px;
 }
 .logo {
+  flex-shrink: 0;
   width: 60px;
   height: 60px;
   object-fit: contain;
 }
 .name {
-  font-size: 2.5rem;
+  display: block;
+  font-size: 1.75rem;
   font-weight: 600;
+  line-height: 1.15;
   color: var(--color-plum);
+  white-space: nowrap; /* always show the full company name on one line */
 }
 .subtitle {
+  display: block; /* sits under the company name */
   font-size: 0.9rem;
   color: var(--color-text-muted);
+  white-space: nowrap;
 }
 
 /* ----- Navigation ----- */
@@ -40,6 +51,7 @@
   font-size: 1.1rem;
   color: var(--color-text-muted);
   text-decoration: none;
+  white-space: nowrap;
 }
 .navLink:hover {
   color: var(--color-plum);
@@ -59,16 +71,17 @@
 .userName {
   font-size: 0.9rem;
   color: var(--color-text-muted);
+  white-space: nowrap;
 }
 .bell {
   position: relative;
   display: flex;
   padding: 6px;
-  border: none;
   border-radius: 50%;
-  background: none;
   color: var(--color-text-muted);
-  cursor: pointer;
+}
+.bell:hover {
+  color: var(--color-plum);
 }
 .bellCount {
   position: absolute;
@@ -84,15 +97,61 @@
   font-size: 0.7rem;
 }
 
-/* ----- Small screens: stack everything ----- */
+/* ----- Compact: portals with more nav links (admin). Same centered layout, smaller links. ----- */
+.compact .navLink {
+  padding: 8px 16px;
+  font-size: 1rem;
+}
+
+/*
+ * Not enough room for brand + centered nav + user on one row:
+ * brand and user share the top row, nav gets its own centered row underneath.
+ * To tune: shrink the window until the brand almost touches the first nav link and set the
+ * width a little above that. The admin header (4 links) needs more room than the therapist one.
+ */
+@media (max-width: 1680px) {
+  .compact {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 8px;
+  }
+  .compact .nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: center;
+  }
+}
+
+@media (max-width: 1360px) {
+  .header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 8px;
+  }
+  .nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: center;
+  }
+}
+
+/* ----- Phones: stack everything in one column ----- */
 @media (max-width: 800px) {
   .header {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     justify-items: start;
     gap: 8px;
     padding: 12px 16px;
   }
+  .nav {
+    grid-column: auto;
+    grid-row: auto; /* back to normal order: brand, nav, user */
+    justify-self: start;
+    flex-wrap: wrap;
+  }
   .userArea {
     justify-self: start;
+  }
+  .name {
+    font-size: 1.3rem;
+    white-space: normal; /* allow wrapping on very narrow screens */
   }
 }

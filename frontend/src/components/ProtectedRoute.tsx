@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
 import type { Role } from '../types/auth'
 import { homePathFor } from '../utils/homePath'
-import {useAuth} from "../hooks/useAuth.ts";
 
 /**
  * Wraps routes that need a signed-in user with one of the allowed roles (see App.tsx).
@@ -11,10 +11,10 @@ import {useAuth} from "../hooks/useAuth.ts";
  * This only controls what the UI shows. The backend still checks every API call,
  * so never rely on this for security.
  */
-export const ProtectedRoute = ({ allow }: { allow: Role[] }) => {
-  const { user, isLoggingIn } = useAuth()
+export function ProtectedRoute({ allow }: { allow: Role[] }) {
+  const { user, isLoading } = useAuth()
 
-  if (isLoggingIn) return null // still asking the backend who is signed in
+  if (isLoading) return null // still asking the backend who is signed in
   if (!user) return <Navigate to="/login" replace />
 
   const hasAllowedRole = user.roles.some((role) => allow.includes(role))

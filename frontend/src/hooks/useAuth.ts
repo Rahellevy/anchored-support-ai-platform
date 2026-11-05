@@ -7,7 +7,7 @@ export const authKeys = { me: ["auth", "me"] as const }
 export const useAuth = () => {
     const queryClient = useQueryClient();
     
-    const { data: user = null } = useQuery({
+    const { data: user = null, isPending } = useQuery({
        queryKey: authKeys.me,
        queryFn: async () => await getCurrentUser(), // returns User, or null on 401
         staleTime: 5 * 60_000,
@@ -39,6 +39,7 @@ export const useAuth = () => {
     
     return {
         user,
+        isLoading: isPending,
         login: loginMutation.mutateAsync,
         isLoggingIn: loginMutation.isPending,
         logout: logoutMutation.mutateAsync,

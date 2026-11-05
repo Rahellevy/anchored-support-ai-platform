@@ -8,7 +8,7 @@ interface IconProps {
   size?: number
 }
 
-const IconBase = ({ size = 18, children }: IconProps & { children: ReactNode }) => {
+function IconBase({ size = 18, children }: IconProps & { children: ReactNode }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -26,7 +26,7 @@ const IconBase = ({ size = 18, children }: IconProps & { children: ReactNode }) 
   )
 }
 
-export const UserIcon = (props: IconProps) => {
+export function UserIcon(props: IconProps) {
   return (
     <IconBase {...props}>
       <circle cx="12" cy="8" r="4" />
@@ -35,7 +35,7 @@ export const UserIcon = (props: IconProps) => {
   )
 }
 
-export const LockIcon = (props: IconProps) => {
+export function LockIcon(props: IconProps) {
   return (
     <IconBase {...props}>
       <rect x="5" y="11" width="14" height="10" rx="2" />
@@ -45,7 +45,7 @@ export const LockIcon = (props: IconProps) => {
 }
 
 /** Eye icon; `crossedOut` adds a slash (used while the password is visible). */
-export const EyeIcon = ({ crossedOut = false, ...props }: IconProps & { crossedOut?: boolean }) => {
+export function EyeIcon({ crossedOut = false, ...props }: IconProps & { crossedOut?: boolean }) {
   return (
     <IconBase {...props}>
       <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" />
@@ -55,7 +55,7 @@ export const EyeIcon = ({ crossedOut = false, ...props }: IconProps & { crossedO
   )
 }
 
-export const BellIcon = (props: IconProps) => {
+export function BellIcon(props: IconProps) {
   return (
     <IconBase {...props}>
       <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />

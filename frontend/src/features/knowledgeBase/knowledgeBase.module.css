@@ -1,0 +1,217 @@
+/* Styles for the admin Knowledge base pages: list, document editor and "Test a question". */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+  align-items: start;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  background: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+.search {
+  width: 240px;
+}
+
+/* ----- Documents table ----- */
+.tableWrap {
+  position: relative; /* keeps the hidden "Actions" header inside the scroll box */
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
+.table th {
+  padding: 16px 10px;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+.table td {
+  padding: 12px 10px;
+  vertical-align: middle;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.95rem;
+}
+.table th:first-child,
+.table td:first-child {
+  padding-left: 24px;
+}
+.table th:last-child,
+.table td:last-child {
+  padding-right: 24px;
+  text-align: right;
+}
+.docLink {
+  color: var(--color-text);
+  font-weight: 500;
+}
+.docLink:hover {
+  color: var(--color-plum);
+}
+.muted {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+.empty {
+  padding: 24px;
+  color: var(--color-text-muted);
+}
+
+/* ----- Sidebar ----- */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.sideTitle {
+  margin-bottom: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-plum);
+}
+.sideText {
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+  font-size: 0.95rem;
+}
+.textLink {
+  font-size: 0.9rem;
+  color: var(--color-plum);
+}
+
+/* ----- Editor ----- */
+.editor {
+  max-width: 860px;
+}
+.backLink {
+  display: inline-block;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+.backLink:hover {
+  color: var(--color-plum);
+}
+.field {
+  margin-bottom: 16px;
+}
+.field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+.content {
+  min-height: 280px;
+}
+.hint {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.statusNote {
+  min-height: 1.3em;
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* Yellow notice: editing a published document takes it out of use until approved */
+.notice {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: var(--badge-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-small);
+  font-size: 0.9rem;
+  color: var(--badge-warning-text);
+}
+
+/* ----- Test a question ----- */
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+.resultsTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-plum);
+}
+.passageHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 8px;
+}
+.passage {
+  padding: 18px 22px;
+}
+.samples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sample {
+  padding: 6px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+}
+.sample:hover {
+  background: var(--color-blush);
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr); /* minmax(0, …) lets wide tables scroll instead of widening the page */
+  }
+  .search {
+    width: 100%;
+  }
+}

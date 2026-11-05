@@ -15,7 +15,7 @@ interface AuthFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   trailing?: ReactNode
 }
 
-export const AuthField = ({ id, label, icon, trailing, ...inputProps }: AuthFieldProps) => {
+export function AuthField({ id, label, icon, trailing, ...inputProps }: AuthFieldProps) {
   return (
     <div className={styles.field}>
       <label htmlFor={id} className="visually-hidden">

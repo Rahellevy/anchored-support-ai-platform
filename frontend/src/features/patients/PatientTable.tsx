@@ -8,14 +8,9 @@ import styles from './patients.module.css'
  * Table of the therapist's patients. Rendered from the `patients` array,
  * so filtering/sorting happens in the page, not here.
  */
-interface PatientTableProps {
-  patients: Patient[]
-  onOpen: (patient: Patient) => void
-}
-
 const COLUMN_COUNT = 7
 
-export const PatientTable = ({ patients, onOpen }: PatientTableProps) => {
+export function PatientTable({ patients }: { patients: Patient[] }) {
   return (
     <section className={styles.tableWrap}>
       <table className={styles.table}>
@@ -64,9 +59,16 @@ export const PatientTable = ({ patients, onOpen }: PatientTableProps) => {
                 </td>
                 <td>{patient.lastReviewed}</td>
                 <td>
-                  <Button variant="outline" onClick={() => onOpen(patient)} aria-label={`Open ${patient.name}`}>
-                    Open
-                  </Button>
+                  {/* Opens the latest conversation. TODO: a per-patient timeline page could go here instead. */}
+                  {patient.latestConversationId ? (
+                    <Button variant="outline" to={`/therapist/conversations/${patient.latestConversationId}`}>
+                      Open
+                    </Button>
+                  ) : (
+                    <Button variant="outline" disabled title="No conversations yet">
+                      Open
+                    </Button>
+                  )}
                 </td>
               </tr>
             ))

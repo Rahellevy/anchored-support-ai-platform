@@ -1,20 +1,20 @@
+import { isAxiosError } from 'axios'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../../components/Button'
 import { EyeIcon, LockIcon, UserIcon } from '../../components/Icons'
-import { useAuth } from "../../hooks/useAuth.ts";
+import { useAuth } from '../../hooks/useAuth'
+import type { LoginRequest } from '../../types/auth'
 import { homePathFor } from '../../utils/homePath'
 import { AuthField } from './AuthField'
 import styles from './auth.module.css'
-import type {LoginRequest} from "../../types/auth.ts";
-import {AxiosError} from "axios";
 
 /**
  * Email + password sign-in.
  * On success the user is sent to their role's home page (see utils/homePath.ts).
  */
 export const LoginForm = () => {
-  const { user, login } = useAuth()
+  const { login, isLoggingIn } = useAuth()
   const navigate = useNavigate()
 
   // Form state: React owns the input values instead of reading them from the DOM.
@@ -23,9 +23,8 @@ export const LoginForm = () => {
   const [rememberMe, setRememberMe] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-    
-    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault() // stop the browser's full-page form submit
 
     if (!email.trim() || !password) {
@@ -34,30 +33,18 @@ export const LoginForm = () => {
     }
 
     setError(null)
-    setIsSubmitting(true)
     try {
-        const loginRequest: LoginRequest = {
-            email: email.trim(),
-            password: password
-        }
-      await login({ loginRequest })
-        
-        if (user === null){
-            setError(`Email and/or password was invalid`);
-            return;
-        } 
-      const home = homePathFor(user)
-        
-      if (home) {
-          navigate(home, {replace: true})
-      }
-      else {
-          setError("Your account doesn't have access to a portal yet.")
-      }
+      const loginRequest: LoginRequest = { email: email.trim(), password, rememberMe }
+
+      // Use the user that login() returns. `user` from useAuth() would still be the
+      // value from before this click until the component re-renders.
+      const signedIn = await login({ loginRequest })
+
+      const home = homePathFor(signedIn)
+      if (home) navigate(home, { replace: true })
+      else setError("Your account doesn't have access to a portal yet.")
     } catch (err) {
       setError(loginErrorMessage(err))
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -117,8 +104,8 @@ export const LoginForm = () => {
         </p>
       )}
 
-      <Button type="submit" fullWidth disabled={isSubmitting}>
-        {isSubmitting ? 'Logging in…' : 'Log in'}
+      <Button type="submit" fullWidth disabled={isLoggingIn}>
+        {isLoggingIn ? 'Logging in…' : 'Log in'}
       </Button>
 
       <p className={styles.divider}>
@@ -137,9 +124,11 @@ export const LoginForm = () => {
 
 /** Turns a failed login into a message that's safe to show the user. */
 const loginErrorMessage = (error: unknown): string => {
-  if (error instanceof AxiosError) {
-    if (error.status === 401) return 'Email or password is incorrect.'
-    if (error.status === 403) return error.message // e.g. "Your account is awaiting approval."
+  if (isAxiosError(error) && error.response) {
+    const { status, data } = error.response
+    if (status === 401) return 'Email or password is incorrect.'
+    if (status === 400) return 'Please check your email and password.'
+    if (status === 403) return data?.detail ?? 'Your account cannot sign in yet.' // server's message, not axios's
   }
   return 'Could not reach the server. Please try again.'
 }

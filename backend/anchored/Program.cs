@@ -48,6 +48,7 @@ try
 
     //Features:
     builder.Services.AddAuthFeature();
+    builder.Services.AddChatFeature();
 
     var app = builder.Build();
 

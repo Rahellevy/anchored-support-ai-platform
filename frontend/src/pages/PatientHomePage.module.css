@@ -1,0 +1,33 @@
+.screen {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 70% 50% at 85% 0%, rgb(var(--color-rose-rgb) / 0.35), transparent 70%),
+    var(--bg-page);
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 24px 48px;
+}
+
+.greeting {
+  margin-bottom: 6px;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--color-plum);
+}
+
+.lead {
+  margin-bottom: 20px;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 700px) {
+  .main {
+    padding: 24px 16px 40px;
+  }
+}

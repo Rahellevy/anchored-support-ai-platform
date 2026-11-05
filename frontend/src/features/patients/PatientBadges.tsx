@@ -3,7 +3,7 @@ import type { Patient } from '../../types/patient'
 import styles from './patients.module.css'
 
 /** "1 High" / "1 Medium" badges, or "None" if the patient has no flags. */
-export const FlagBadges = ({ high, medium }: { high: number; medium: number }) => {
+export function FlagBadges({ high, medium }: { high: number; medium: number }) {
   if (high === 0 && medium === 0) return <Badge tone="neutral">None</Badge>
 
   return (
@@ -15,7 +15,7 @@ export const FlagBadges = ({ high, medium }: { high: number; medium: number }) =
 }
 
 /** Review state for a patient's conversations. */
-export const ReviewStatusBadge = ({ patient }: { patient: Patient }) => {
+export function ReviewStatusBadge({ patient }: { patient: Patient }) {
   if (patient.unreviewedConversations > 0) {
     return <Badge tone="pending">{patient.unreviewedConversations} unreviewed</Badge>
   }

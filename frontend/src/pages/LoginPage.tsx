@@ -1,18 +1,18 @@
 import { Navigate } from 'react-router-dom'
 import logo from '../assets/logo.png'
 import { LoginForm } from '../features/auth/LoginForm'
+import { useAuth } from '../hooks/useAuth'
 import { homePathFor } from '../utils/homePath'
 import styles from './LoginPage.module.css'
-import {useAuth} from "../hooks/useAuth.ts";
 
 /**
  * /login: frosted card with the logo and login form, over a logo watermark.
  * Already signed in? Skip straight to the user's home page.
  */
-export const LoginPage = ()=> {
-  const { user, isLoggingIn } = useAuth();
+export function LoginPage() {
+  const { user, isLoading } = useAuth()
 
-  if (isLoggingIn) return null
+  if (isLoading) return null
   const home = user && homePathFor(user)
   if (home) return <Navigate to={home} replace />
 

@@ -9,7 +9,6 @@ public class Conversation
     public Guid Id { get; set; } = Guid.CreateVersion7(); // time-ordered GUIDs
     public string PatientId { get; set; } = null!;
     public AppUser Patient { get; set; } = null!;
-    public bool DisclosureAck { get; set; }
     public DateTimeOffset StartedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset LastMessageAt { get; set; } = DateTimeOffset.UtcNow;
     public List<Message> Messages { get; set; } = [];
@@ -18,7 +17,7 @@ public class Conversation
 public enum MessageSender
 {
     Patient,
-    AiAssistant
+    Assistant
 }
 
 public class Message
@@ -32,6 +31,10 @@ public class Message
     public DateTimeOffset SentAt { get; set; } = DateTimeOffset.UtcNow;
 }
 
+public record MessageDto(Guid Id, Guid ConversationId, MessageSender Sender, string Content, DateTimeOffset SentAt)
+{
+    public static MessageDto From(Message m) => new(m.Id, m.ConversationId, m.Sender, m.Content, m.SentAt);
+}
 
 public class ConversationConfiguration : IEntityTypeConfiguration<Conversation>
 {
@@ -47,7 +50,9 @@ public class ConversationConfiguration : IEntityTypeConfiguration<Conversation>
             .WithOne(m => m.Conversation)
             .HasForeignKey(m => m.ConversationId)
             .OnDelete(DeleteBehavior.Cascade);
-        builder.HasIndex(c => new { c.PatientId, c.LastMessageAt });
+        builder.HasIndex(c => c.PatientId).IsUnique();
+        
+        // might need to update migrations
     }
 }
 
