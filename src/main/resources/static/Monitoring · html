@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anchored – Monitoring</title>
-<img class="logo" src="images/logo.png" alt="Anchored Support Services logo" width="60" height="60">
+
 
 <style>
 :root {
@@ -236,8 +236,7 @@ table.data { width: 100%; min-width: 640px; border-collapse: collapse; }
 
 <header class="header">
   <div class="brand">
-    <div class="logo" role="img" aria-label="Anchored Support Services logo">
-      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="2"/><path d="M12 7v14M8 11h8M5 14a7 7 0 0 0 14 0"/></svg>
+   <img class="logo" src="images/logo.png" alt="Anchored Support Services logo" width="60" height="60">
     </div>
     <div>
       <div class="brand-name">Anchored</div>
