@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anchored – Monitoring</title>
+<img class="logo" src="images/logo.png" alt="Anchored Support Services logo" width="60" height="60">
+
+<style>
+:root {
+  --plum: #743a48;
+  --plum-dark: #5e2e3a;
+  --blush: #fadcdc;
+  --peach: #fdeee3;
+  --text: #4a2f36;
+  --muted: #6a565b;
+  --error: #9b1c31;
+  --border: #ecd9d6;
+  --surface: rgba(255, 255, 255, 0.82);
+  --amber: #d9b84a;
+  --font: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font);
+  color: var(--text);
+  line-height: 1.5;
+  background:
+    radial-gradient(ellipse 70% 50% at 85% 0%, rgba(221, 133, 144, 0.35), transparent 70%),
+    linear-gradient(90deg, var(--peach), var(--blush));
+}
+h1, h2, h3, p { margin: 0; }
+:focus-visible { outline: 3px solid var(--plum); outline-offset: 2px; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* header */
+.header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 24px;
+  align-items: center;
+  padding: 10px 48px;
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid var(--border);
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo {
+  width: 56px; height: 56px; border-radius: 14px;
+  background: var(--plum); color: #fff;
+  display: grid; place-items: center;
+}
+.brand-name { font-weight: 600; font-size: 1.9rem; line-height: 1.1; color: var(--plum); }
+.brand-sub { color: var(--muted); font-size: 0.9rem; white-space: nowrap; }
+.nav { display: flex; gap: 8px; justify-self: center; flex-wrap: wrap; justify-content: center; }
+.nav a {
+  padding: 8px 16px; border-radius: 999px; color: var(--muted);
+  text-decoration: none; font-size: 1rem; white-space: nowrap;
+}
+.nav a:hover { color: var(--plum); }
+.nav a[aria-current="page"] { background: var(--blush); color: var(--plum); }
+.user-area { justify-self: end; display: flex; align-items: center; gap: 16px; }
+.user-name { color: var(--muted); font-size: 0.9rem; }
+.banner {
+  background: var(--plum-dark); color: #fff; text-align: center;
+  padding: 10px 16px; font-size: 0.9rem;
+}
+
+/* page */
+.page { max-width: 1320px; margin: 0 auto; padding: 32px 24px 48px; }
+.page-head {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
+}
+h1 { font-size: 1.75rem; font-weight: 600; color: var(--plum); line-height: 1.2; margin-bottom: 8px; }
+.intro-text { color: var(--muted); max-width: 680px; }
+.head-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.head-actions label { font-size: 0.85rem; color: var(--muted); }
+
+/* controls */
+select, input[type="number"] {
+  font: inherit; font-size: 0.9rem; color: var(--text);
+  background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px;
+}
+.btn {
+  font: inherit; font-size: 0.9rem; cursor: pointer; padding: 8px 24px;
+  border-radius: 999px; background: transparent; color: var(--plum);
+  border: 1px solid var(--plum);
+}
+.btn:hover { background: var(--blush); }
+.btn.primary { background: var(--plum); color: #fff; }
+.btn.primary:hover { background: var(--plum-dark); }
+
+/* tabs */
+.tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.tab {
+  font: inherit; font-size: 0.9rem; cursor: pointer; padding: 8px 20px;
+  border-radius: 999px; background: #fff; color: var(--text); border: 1px solid var(--border);
+}
+.tab:hover { color: var(--plum); }
+.tab[aria-selected="true"] { background: var(--plum); color: #fff; border-color: var(--plum); }
+.panel[hidden] { display: none; }
+
+/* layout */
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; }
+.stack { display: flex; flex-direction: column; gap: 24px; }
+aside { display: flex; flex-direction: column; gap: 16px; }
+aside h2 { font-size: 1rem; font-weight: 600; color: var(--plum); margin-bottom: 12px; }
+aside .card p { font-size: 0.95rem; margin-bottom: 10px; }
+
+/* cards */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 24px; padding: 24px;
+}
+.card h2 { font-size: 1rem; font-weight: 600; color: var(--plum); margin-bottom: 4px; }
+.card .sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; }
+.note { color: var(--muted); font-size: 0.9rem; }
+
+/* tiles */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; }
+.tile {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 18px 20px;
+}
+.tile .label { font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
+.tile .value { font-size: 1.75rem; font-weight: 600; color: var(--plum); line-height: 1.2; }
+.tile .hint { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+.tile.alert { border-color: var(--error); }
+.tile.alert .value { color: var(--error); }
+
+/* badges */
+.badge {
+  display: inline-block; padding: 2px 12px; border-radius: 999px;
+  font-size: 0.8rem; white-space: nowrap;
+}
+.badge.high { background: var(--error); color: #fff; }
+.badge.medium { background: #f6e7ae; color: #5c4a08; }
+.badge.ok { background: #dde9de; color: #2f4a3f; }
+.badge.warn { background: #f6e7ae; color: #5c4a08; }
+.badge.bad { background: var(--error); color: #fff; }
+.badge.neutral { background: #f1e6e4; color: var(--muted); }
+.badge.pending { background: #f4dcd2; color: #6b3a2a; }
+
+/* tables */
+.table-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 24px; overflow-x: auto;
+}
+.table-box .table-title { padding: 20px 24px 0; }
+.table-box .table-title h2 { font-size: 1rem; font-weight: 600; color: var(--plum); }
+.table-box .table-title p { font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+table.data { width: 100%; min-width: 640px; border-collapse: collapse; }
+.data th {
+  text-align: left; font-weight: 400; font-size: 0.85rem; color: var(--muted);
+  padding: 14px 10px;
+}
+.data td {
+  padding: 12px 10px; vertical-align: middle; border-top: 1px solid var(--border);
+  font-size: 0.9rem; white-space: nowrap;
+}
+.data th:first-child, .data td:first-child { padding-left: 24px; }
+.data th:last-child, .data td:last-child { padding-right: 24px; }
+.data tr.overdue { background: rgba(155, 28, 49, 0.07); }
+.data .num { text-align: right; }
+.code { font-size: 0.75rem; color: var(--muted); display: block; }
+.filter-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.filter-row label { font-size: 0.85rem; color: var(--muted); }
+
+/* chart */
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font); font-size: 11px; fill: var(--muted); }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.legend { display: flex; gap: 18px; font-size: 0.85rem; color: var(--muted); margin-top: 8px; flex-wrap: wrap; }
+.legend span::before {
+  content: ""; display: inline-block; width: 12px; height: 12px;
+  border-radius: 4px; margin-right: 6px; vertical-align: -1px;
+}
+.legend .l-high::before { background: var(--error); }
+.legend .l-med::before { background: var(--amber); }
+
+/* meters */
+.meter-row { margin-bottom: 16px; }
+.meter-row:last-child { margin-bottom: 0; }
+.meter-top { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 6px; gap: 12px; }
+.meter-top .v { font-weight: 600; color: var(--plum); }
+.meter { height: 10px; background: #f1e6e4; border-radius: 999px; overflow: hidden; }
+.meter > span { display: block; height: 100%; background: var(--plum); border-radius: 999px; }
+.meter.warn > span { background: var(--amber); }
+.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+
+/* system cards */
+.sys-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.sys-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 18px 20px;
+}
+.sys-item .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+.sys-item .name { font-size: 0.9rem; color: var(--muted); }
+.sys-item .big { font-size: 1.4rem; font-weight: 600; color: var(--plum); }
+.sys-item .hint { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+/* attention list */
+.attn { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.attn li { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 0.95rem; }
+.count-pill {
+  display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 8px;
+  border-radius: 999px; background: #f6e7ae; color: #5c4a08; font-size: 0.85rem;
+}
+.count-pill.zero { background: #dde9de; color: #2f4a3f; }
+.count-pill.bad { background: var(--error); color: #fff; }
+
+/* threshold form */
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
+.field input { width: 100%; }
+.card .btn.full { width: 100%; }
+.status-note { font-size: 0.85rem; color: var(--muted); margin-top: 12px; min-height: 1.3em; }
+.audit-note { font-size: 0.85rem; color: var(--muted); padding: 0 4px; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 800px) {
+  .header { grid-template-columns: 1fr; padding: 10px 24px; }
+  .nav { justify-self: start; }
+  .user-area { justify-self: start; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="brand">
+    <div class="logo" role="img" aria-label="Anchored Support Services logo">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="2"/><path d="M12 7v14M8 11h8M5 14a7 7 0 0 0 14 0"/></svg>
+    </div>
+    <div>
+      <div class="brand-name">Anchored</div>
+      <div class="brand-sub">Administration</div>
+    </div>
+  </div>
+  <nav class="nav" aria-label="Primary">
+    <a href="#">Users</a>
+    <a href="#">Knowledge base</a>
+    <a href="#">Red-flag rules</a>
+    <a href="#" aria-current="page">Monitoring</a>
+  </nav>
+  <div class="user-area">
+    <span class="user-name">Riley Chen · Administrator</span>
+  </div>
+</header>
+
+<div class="banner">Synthetic data only. Proof of concept.</div>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <h1>Monitoring</h1>
+      <p class="intro-text">Is the system working safely, and is anyone falling through the cracks? This page shows counts, timing and status only. It never shows conversation content.</p>
+    </div>
+    <div class="head-actions">
+      <label for="range">Time range</label>
+      <select id="range">
+        <option value="24h">Last 24 hours</option>
+        <option value="7d" selected>Last 7 days</option>
+        <option value="30d">Last 30 days</option>
+      </select>
+      <button class="btn" type="button" id="exportBtn">Export summary</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <section>
+      <div class="tabs" role="tablist" aria-label="Monitoring sections">
+        <button class="tab" role="tab" id="t-overview" data-tab="overview" aria-controls="p-overview" aria-selected="true">Overview</button>
+        <button class="tab" role="tab" id="t-flags" data-tab="flags" aria-controls="p-flags" aria-selected="false">Flags</button>
+        <button class="tab" role="tab" id="t-quality" data-tab="quality" aria-controls="p-quality" aria-selected="false">Quality</button>
+        <button class="tab" role="tab" id="t-system" data-tab="system" aria-controls="p-system" aria-selected="false">System</button>
+        <button class="tab" role="tab" id="t-audit" data-tab="audit" aria-controls="p-audit" aria-selected="false">Audit log</button>
+      </div>
+
+      <!-- Overview -->
+      <div class="panel" id="p-overview" role="tabpanel" aria-labelledby="t-overview">
+        <div class="stack">
+          <div class="tiles" id="tiles"></div>
+
+          <div class="card">
+            <h2>Red flags raised</h2>
+            <p class="sub" id="chartSub"></p>
+            <div id="chart"></div>
+            <div class="legend"><span class="l-high">High severity</span><span class="l-med">Medium severity</span></div>
+          </div>
+
+          <div class="table-box">
+            <div class="table-title">
+              <h2>Therapist caseload and open flags</h2>
+              <p>Patient counts match the Users page. Open flags are waiting for a therapist to review them.</p>
+            </div>
+            <table class="data" style="min-width: 560px">
+              <thead><tr><th>Therapist</th><th class="num">Patients</th><th class="num">Open flags</th><th>Oldest open flag</th></tr></thead>
+              <tbody id="caseload"></tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <h2>Conversations</h2>
+            <p class="sub" id="convoSub"></p>
+            <div class="sys-grid" id="convo"></div>
+            <p class="note" style="margin-top:12px">Counts and timing only. No message text is shown.</p>
+          </div>
+
+          <div class="table-box">
+            <div class="table-title">
+              <h2>Users</h2>
+              <p>Accounts by role. Manage individual accounts on the Users page.</p>
+            </div>
+            <table class="data" style="min-width: 560px">
+              <thead><tr><th>Role</th><th class="num">Total</th><th class="num">Active</th><th class="num">Inactive</th><th>Last sign-in</th></tr></thead>
+              <tbody id="userRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flags -->
+      <div class="panel" id="p-flags" role="tabpanel" aria-labelledby="t-flags" hidden>
+        <div class="filter-row">
+          <label for="flagFilter">Show</label>
+          <select id="flagFilter">
+            <option value="all">All flags</option>
+            <option value="Unreviewed">Unreviewed</option>
+            <option value="overdue">Overdue</option>
+            <option value="Reviewed">Reviewed</option>
+          </select>
+          <span class="note">Patients appear by ID only. Message text is never shown here.</span>
+        </div>
+        <div class="table-box">
+          <table class="data" style="min-width: 820px">
+            <thead><tr><th>Flag</th><th>Rule</th><th>Severity</th><th>Patient</th><th>Therapist</th><th>Raised</th><th>Status</th></tr></thead>
+            <tbody id="flagRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Quality -->
+      <div class="panel" id="p-quality" role="tabpanel" aria-labelledby="t-quality" hidden>
+        <div class="stack">
+          <div class="two-col">
+            <div class="card">
+              <h2>Answer quality</h2>
+              <p class="sub">Share of AI replies, last 7 days</p>
+              <div class="meter-row">
+                <div class="meter-top"><span>Grounded in the knowledge base</span><span class="v">94%</span></div>
+                <div class="meter"><span style="width:94%"></span></div>
+              </div>
+              <div class="meter-row">
+                <div class="meter-top"><span>Fallback ("I can't help with that")</span><span class="v">4%</span></div>
+                <div class="meter warn"><span style="width:4%"></span></div>
+              </div>
+              <div class="meter-row">
+                <div class="meter-top"><span>Positive feedback (thumbs up)</span><span class="v">87%</span></div>
+                <div class="meter"><span style="width:87%"></span></div>
+              </div>
+            </div>
+            <div class="card">
+              <h2>Safety behaviour</h2>
+              <p class="sub">Counts, last 7 days</p>
+              <div class="meter-row">
+                <div class="meter-top"><span>Replies adjusted by safety filters</span><span class="v">12</span></div>
+                <div class="meter warn"><span style="width:24%"></span></div>
+              </div>
+              <div class="meter-row">
+                <div class="meter-top"><span>Times crisis resources were shown</span><span class="v">9</span></div>
+                <div class="meter"><span style="width:18%"></span></div>
+              </div>
+              <div class="meter-row">
+                <div class="meter-top"><span>Replies sent to therapist review</span><span class="v">15</span></div>
+                <div class="meter"><span style="width:30%"></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-box">
+            <div class="table-title">
+              <h2>Rule performance</h2>
+              <p>How often each rule fired and what therapists decided. Use this to tune noisy rules on the Red-flag rules page.</p>
+            </div>
+            <table class="data" style="min-width: 700px">
+              <thead><tr><th>Rule</th><th class="num">Fired</th><th class="num">Confirmed</th><th class="num">False positive</th><th class="num">Unclear</th><th>Confirmed rate</th></tr></thead>
+              <tbody id="ruleRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- System -->
+      <div class="panel" id="p-system" role="tabpanel" aria-labelledby="t-system" hidden>
+        <div class="stack">
+          <div class="sys-grid">
+            <div class="sys-item"><div class="top"><span class="name">Uptime (30 days)</span><span class="badge ok">OK</span></div><div class="big">99.94%</div><div class="hint">Target 99.9%</div></div>
+            <div class="sys-item"><div class="top"><span class="name">Error rate</span><span class="badge ok">OK</span></div><div class="big">0.4%</div><div class="hint">Alert above 2%</div></div>
+            <div class="sys-item"><div class="top"><span class="name">Response time (p95)</span><span class="badge ok">OK</span></div><div class="big">2.1 s</div><div class="hint">Median 0.9 s</div></div>
+            <div class="sys-item"><div class="top"><span class="name">AI provider</span><span class="badge ok">Operational</span></div><div class="big">Connected</div><div class="hint">Last check 1 min ago</div></div>
+            <div class="sys-item"><div class="top"><span class="name">Knowledge base index</span><span class="badge ok">Fresh</span></div><div class="big">Nov 2</div><div class="hint">Last refreshed</div></div>
+            <div class="sys-item"><div class="top"><span class="name">Therapist alerts</span><span class="badge warn">Degraded</span></div><div class="big">1 failed</div><div class="hint">of 41 sent this week</div></div>
+          </div>
+
+          <div class="card">
+            <h2>Knowledge base</h2>
+            <p class="sub">Documents the assistant draws on to answer. Titles and status only.</p>
+            <div class="sys-grid" id="kbStats"></div>
+          </div>
+
+          <div class="table-box">
+            <div class="table-title">
+              <h2>Documents needing attention</h2>
+              <p>Documents that failed to index are not available to the assistant.</p>
+            </div>
+            <table class="data" style="min-width: 560px">
+              <thead><tr><th>Document</th><th>Added</th><th>Status</th><th>Detail</th></tr></thead>
+              <tbody id="kbRows"></tbody>
+            </table>
+          </div>
+
+          <div class="table-box">
+            <div class="table-title">
+              <h2>Therapist alert delivery</h2>
+              <p>A failed alert is a safety problem, because a therapist may not know a flag is waiting.</p>
+            </div>
+            <table class="data" style="min-width: 640px">
+              <thead><tr><th>Time</th><th>Flag</th><th>Sent to</th><th>Channel</th><th>Result</th></tr></thead>
+              <tbody>
+                <tr><td>Nov 7, 8:41 AM</td><td>F-1050</td><td>Dr. Alex Kim</td><td>SMS</td><td><span class="badge bad">Failed</span> <span class="code">Timeout. Retry pending.</span></td></tr>
+                <tr><td>Nov 7, 7:58 AM</td><td>F-1052</td><td>Dr. Morgan Hale</td><td>Email</td><td><span class="badge ok">Delivered</span></td></tr>
+                <tr><td>Nov 6, 6:20 PM</td><td>F-1051</td><td>Dr. Morgan Hale</td><td>Email</td><td><span class="badge ok">Delivered</span></td></tr>
+                <tr><td>Nov 6, 1:05 PM</td><td>F-1049</td><td>No therapist assigned</td><td>None</td><td><span class="badge warn">Not sent</span> <span class="code">Patient is unassigned.</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Audit log -->
+      <div class="panel" id="p-audit" role="tabpanel" aria-labelledby="t-audit" hidden>
+        <div class="filter-row">
+          <label for="auditFilter">Action type</label>
+          <select id="auditFilter">
+            <option value="all">All actions</option>
+            <option value="Assignment">Assignment</option>
+            <option value="Account">Account</option>
+            <option value="Rule">Rule</option>
+            <option value="Review">Review</option>
+            <option value="Settings">Settings</option>
+            <option value="Export">Export</option>
+          </select>
+        </div>
+        <div class="table-box">
+          <table class="data" style="min-width: 760px">
+            <thead><tr><th>When</th><th>Who</th><th>Action</th><th>Target</th><th>Detail</th></tr></thead>
+            <tbody id="auditRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <p class="status-note" id="statusNote" role="status"></p>
+    </section>
+
+    <aside>
+      <div class="card">
+        <h2>Needs attention</h2>
+        <ul class="attn" id="attn"></ul>
+      </div>
+      <div class="card">
+        <h2>Alert thresholds</h2>
+        <div class="field">
+          <label for="thrHours">Notify admin if a high flag is unreviewed for (hours)</label>
+          <input type="number" id="thrHours" min="1" max="24" value="2">
+        </div>
+        <div class="field">
+          <label for="thrErr">Notify admin if error rate goes above (%)</label>
+          <input type="number" id="thrErr" min="1" max="50" value="2">
+        </div>
+        <button class="btn primary full" type="button" id="saveThr">Save thresholds</button>
+      </div>
+      <div class="card">
+        <h2>What this page shows</h2>
+        <p>Counts, timing and status only. Whether administrators can open conversations is set by sponsor policy.</p>
+        <p class="note">[Sponsor decision pending]</p>
+      </div>
+      <p class="audit-note">Every change on this page is recorded in the audit log.</p>
+    </aside>
+  </div>
+</main>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  // ---------- Synthetic data ----------
+  const PATIENTS = { "Dr. Morgan Hale": 5, "Dr. Alex Kim": 3, "Unassigned": 1 };
+
+  const USERS = [
+    { role: "Administrators", total: 2,  active: 2,  last: "Today, 9:02 AM" },
+    { role: "Therapists",     total: 2,  active: 2,  last: "Today, 8:41 AM" },
+    { role: "Patients",       total: 9,  active: 8,  last: "Today, 7:15 AM" }
+  ];
+  const CONVO = {
+    "24h": { n: 61,   avgMsgs: 14, avgMin: 9,  none: 3, n7: null },
+    "7d":  { n: 412,  avgMsgs: 16, avgMin: 11, none: 2 },
+    "30d": { n: 1736, avgMsgs: 15, avgMin: 10, none: 1 }
+  };
+  const KB = { total: 48, indexed: 45, pending: 2, failed: 1, updated: "Nov 2" };
+  const KB_ISSUES = [
+    { doc: "Coping skills handbook (v3)", added: "Nov 6", status: "Failed",  detail: "File could not be read. Re-upload needed." },
+    { doc: "Crisis resources, regional",  added: "Nov 7", status: "Pending", detail: "Waiting to be indexed." },
+    { doc: "Sleep hygiene guide",         added: "Nov 7", status: "Pending", detail: "Waiting to be indexed." }
+  ];
+
+  // ago = hours since the flag was raised. review = hours taken to review (null = not reviewed yet).
+  const FLAGS = [
+    { id: "F-1052", rule: "Self-harm language", sev: "High",   patient: "P-0231", ther: "Dr. Morgan Hale", ago: 0.8,  review: null, outcome: "" },
+    { id: "F-1051", rule: "Hopelessness",       sev: "Medium", patient: "P-0188", ther: "Dr. Morgan Hale", ago: 3.5,  review: null, outcome: "" },
+    { id: "F-1050", rule: "Self-harm language", sev: "High",   patient: "P-0104", ther: "Dr. Alex Kim",    ago: 5.2,  review: null, outcome: "" },
+    { id: "F-1049", rule: "Missed check-ins",   sev: "Medium", patient: "P-0302", ther: "Unassigned",      ago: 26,   review: null, outcome: "" },
+    { id: "F-1048", rule: "Substance use",      sev: "Medium", patient: "P-0127", ther: "Dr. Alex Kim",    ago: 30,   review: 2.1,  outcome: "Confirmed" },
+    { id: "F-1047", rule: "Self-harm language", sev: "High",   patient: "P-0231", ther: "Dr. Morgan Hale", ago: 52,   review: 0.4,  outcome: "Confirmed" },
+    { id: "F-1046", rule: "Sleep disruption",   sev: "Medium", patient: "P-0140", ther: "Dr. Morgan Hale", ago: 70,   review: 5.5,  outcome: "False positive" },
+    { id: "F-1045", rule: "Hopelessness",       sev: "High",   patient: "P-0188", ther: "Dr. Alex Kim",    ago: 98,   review: 0.9,  outcome: "Confirmed" },
+    { id: "F-1044", rule: "Substance use",      sev: "Medium", patient: "P-0127", ther: "Dr. Alex Kim",    ago: 121,  review: 3.2,  outcome: "Unclear" },
+    { id: "F-1043", rule: "Missed check-ins",   sev: "Medium", patient: "P-0099", ther: "Dr. Morgan Hale", ago: 146,  review: 8.0,  outcome: "False positive" }
+  ];
+
+  const RULES = [
+    { rule: "Self-harm language", fired: 14, conf: 11, fp: 2, unc: 1 },
+    { rule: "Hopelessness",       fired: 19, conf: 9,  fp: 7, unc: 3 },
+    { rule: "Substance use",      fired: 8,  conf: 4,  fp: 2, unc: 2 },
+    { rule: "Missed check-ins",   fired: 23, conf: 6,  fp: 15, unc: 2 },
+    { rule: "Sleep disruption",   fired: 11, conf: 3,  fp: 7, unc: 1 }
+  ];
+
+  const AUDIT = [
+    { when: "Nov 7, 9:15 AM",  who: "Riley Chen",       type: "Assignment", target: "Patient P-0188",       detail: "Dr. Alex Kim to Dr. Morgan Hale" },
+    { when: "Nov 6, 4:02 PM",  who: "Riley Chen",       type: "Rule",       target: "Hopelessness",         detail: "Edited draft. Not yet published." },
+    { when: "Nov 6, 1:30 PM",  who: "Riley Chen",       type: "Settings",   target: "Alert thresholds",     detail: "High-flag review window 3 hours to 2 hours" },
+    { when: "Nov 5, 11:48 AM", who: "Riley Chen",       type: "Account",    target: "Patient P-0302",       detail: "Invitation sent" },
+    { when: "Nov 5, 9:10 AM",  who: "Dr. Morgan Hale",  type: "Review",     target: "Flag F-1047",          detail: "Marked reviewed (Confirmed)" },
+    { when: "Nov 4, 3:22 PM",  who: "Riley Chen",       type: "Export",     target: "Usage summary",        detail: "CSV, counts only" },
+    { when: "Nov 4, 10:05 AM", who: "Riley Chen",       type: "Assignment", target: "Patient P-0231",       detail: "Unassigned to Dr. Morgan Hale" },
+    { when: "Nov 3, 2:40 PM",  who: "Riley Chen",       type: "Account",    target: "Dr. Alex Kim",         detail: "Role confirmed: Therapist" },
+    { when: "Nov 2, 8:00 AM",  who: "System",           type: "Settings",   target: "Knowledge base",       detail: "Index refreshed" }
+  ];
+
+  const RANGES = {
+    "24h": { n: 8,  hmax: 1, mmax: 2, patients: 38, median: "34 min", title: "Last 24 hours, in 3-hour blocks", seed: 11 },
+    "7d":  { n: 7,  hmax: 3, mmax: 5, patients: 52, median: "46 min", title: "Last 7 days, per day",            seed: 23 },
+    "30d": { n: 30, hmax: 3, mmax: 5, patients: 67, median: "52 min", title: "Last 30 days, per day",           seed: 37 }
+  };
+
+  function rng(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function buildSeries(key) {
+    const R = RANGES[key], r = rng(R.seed), out = [], now = Date.now();
+    for (let i = R.n - 1; i >= 0; i--) {
+      let label;
+      if (key === "24h") {
+        label = new Date(now - i * 3 * 3600e3).toLocaleTimeString("en-US", { hour: "numeric" });
+      } else if (key === "7d") {
+        label = new Date(now - i * 864e5).toLocaleDateString("en-US", { weekday: "short" });
+      } else {
+        label = new Date(now - i * 864e5).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      }
+      out.push({ label, h: Math.floor(r() * (R.hmax + 1)), m: Math.floor(r() * (R.mmax + 1)) });
+    }
+    return out;
+  }
+  const SERIES = { "24h": buildSeries("24h"), "7d": buildSeries("7d"), "30d": buildSeries("30d") };
+
+  // ---------- State ----------
+  let range = "7d";
+  let threshold = 2;
+  let flagFilter = "all";
+  let auditFilter = "all";
+
+  const isOverdue = f => f.sev === "High" && f.review === null && f.ago > threshold;
+  const isOpen = f => f.review === null;
+
+  function ago(h) {
+    if (h < 1) return Math.round(h * 60) + " min ago";
+    if (h < 24) return (+h.toFixed(1)) + " h ago";
+    return Math.floor(h / 24) + " d " + Math.round(h % 24) + " h ago";
+  }
+  function dur(h) {
+    return h < 1 ? Math.round(h * 60) + " min" : (+h.toFixed(1)) + " h";
+  }
+  const sevBadge = s => `<span class="badge ${s === "High" ? "high" : "medium"}">${s}</span>`;
+
+  // ---------- Renderers ----------
+  function renderTiles() {
+    const R = RANGES[range];
+    const total = SERIES[range].reduce((n, d) => n + d.h + d.m, 0);
+    const open = FLAGS.filter(isOpen);
+    const oldest = open.length ? Math.max(...open.map(f => f.ago)) : 0;
+    const overdue = FLAGS.filter(isOverdue).length;
+    $("tiles").innerHTML = `
+      <div class="tile"><div class="label">Active patients</div><div class="value">${R.patients}</div><div class="hint">${R.title.split(",")[0]}</div></div>
+      <div class="tile"><div class="label">Red flags raised</div><div class="value">${total}</div><div class="hint">${R.title.split(",")[0]}</div></div>
+      <div class="tile ${overdue ? "alert" : ""}"><div class="label">Unreviewed flags</div><div class="value">${open.length}</div><div class="hint">${open.length ? "Oldest " + ago(oldest) : "All reviewed"}</div></div>
+      <div class="tile"><div class="label">Median time to review</div><div class="value">${R.median}</div><div class="hint">Flag raised to reviewed</div></div>
+      <div class="tile"><div class="label">System status</div><div class="value" style="font-size:1.2rem"><span class="badge warn">Degraded</span></div><div class="hint">1 therapist alert failed</div></div>`;
+  }
+
+  function renderChart() {
+    const R = RANGES[range], s = SERIES[range];
+    const W = 640, H = 240, L = 34, B = 28, T = 12, RM = 8;
+    const iw = W - L - RM, ih = H - T - B;
+    const max = Math.max(4, ...s.map(d => d.h + d.m));
+    const top = Math.ceil(max / 4) * 4;
+    const bw = iw / s.length;
+    const step = s.length > 12 ? 5 : 1;
+    const total = s.reduce((n, d) => n + d.h + d.m, 0);
+    const high = s.reduce((n, d) => n + d.h, 0);
+    let svg = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Stacked bar chart of red flags raised. ${total} flags in total, ${high} high severity.">`;
+    for (let i = 0; i <= 4; i++) {
+      const y = T + ih - ih * i / 4;
+      svg += `<line class="grid" x1="${L}" x2="${W - RM}" y1="${y}" y2="${y}"/>`;
+      svg += `<text x="${L - 8}" y="${y + 4}" text-anchor="end">${top * i / 4}</text>`;
+    }
+    s.forEach((d, i) => {
+      const x = L + i * bw + bw * 0.18, w = bw * 0.64;
+      const hM = ih * d.m / top, hH = ih * d.h / top;
+      const yM = T + ih - hM, yH = yM - hH;
+      if (d.m) svg += `<rect x="${x}" y="${yM}" width="${w}" height="${hM}" rx="3" fill="var(--amber)"><title>${d.label}: ${d.m} medium</title></rect>`;
+      if (d.h) svg += `<rect x="${x}" y="${yH}" width="${w}" height="${hH}" rx="3" fill="var(--error)"><title>${d.label}: ${d.h} high</title></rect>`;
+      if (i % step === 0 || i === s.length - 1 && step === 1) {
+        svg += `<text x="${x + w / 2}" y="${H - 8}" text-anchor="middle">${d.label}</text>`;
+      }
+    });
+    svg += "</svg>";
+    $("chart").innerHTML = svg;
+    $("chartSub").textContent = `${R.title}. ${total} flags in total, ${high} high severity.`;
+  }
+
+  function renderCaseload() {
+    const names = ["Dr. Morgan Hale", "Dr. Alex Kim", "Unassigned"];
+    $("caseload").innerHTML = names.map(n => {
+      const open = FLAGS.filter(f => f.ther === n && isOpen(f));
+      const oldest = open.length ? ago(Math.max(...open.map(f => f.ago))) : "None";
+      const label = n === "Unassigned" ? `${n} <span class="code">Patients without a therapist</span>` : n;
+      return `<tr><td>${label}</td><td class="num">${PATIENTS[n]}</td><td class="num">${open.length}</td><td>${oldest}</td></tr>`;
+    }).join("");
+  }
+
+  function renderFlags() {
+    const rows = FLAGS.filter(f => {
+      if (flagFilter === "all") return true;
+      if (flagFilter === "overdue") return isOverdue(f);
+      return (f.review === null ? "Unreviewed" : "Reviewed") === flagFilter;
+    });
+    $("flagRows").innerHTML = rows.length ? rows.map(f => {
+      const status = f.review === null
+        ? `<span class="badge pending">Unreviewed</span>${isOverdue(f) ? ' <span class="badge bad">Overdue</span>' : ""}`
+        : `<span class="badge ok">Reviewed</span> <span class="code">In ${dur(f.review)} · ${f.outcome}</span>`;
+      const ther = f.ther === "Unassigned" ? '<span class="badge warn">Unassigned</span>' : f.ther;
+      return `<tr class="${isOverdue(f) ? "overdue" : ""}"><td>${f.id}</td><td>${f.rule}</td><td>${sevBadge(f.sev)}</td><td>${f.patient}</td><td>${ther}</td><td>${ago(f.ago)}</td><td>${status}</td></tr>`;
+    }).join("") : `<tr><td colspan="7" style="padding:24px">No flags match this filter.</td></tr>`;
+  }
+
+  function renderRules() {
+    $("ruleRows").innerHTML = RULES.map(r => {
+      const pct = Math.round(r.conf / r.fired * 100);
+      return `<tr><td>${r.rule}</td><td class="num">${r.fired}</td><td class="num">${r.conf}</td><td class="num">${r.fp}</td><td class="num">${r.unc}</td>
+        <td style="min-width:170px"><div class="meter-top" style="margin:0 0 4px"><span class="v">${pct}%</span></div><div class="meter ${pct < 40 ? "warn" : ""}"><span style="width:${pct}%"></span></div></td></tr>`;
+    }).join("");
+  }
+
+  function renderAudit() {
+    const rows = AUDIT.filter(a => auditFilter === "all" || a.type === auditFilter);
+    $("auditRows").innerHTML = rows.length ? rows.map(a =>
+      `<tr><td>${a.when}</td><td>${a.who}</td><td><span class="badge neutral">${a.type}</span></td><td>${a.target}</td><td>${a.detail}</td></tr>`
+    ).join("") : `<tr><td colspan="5" style="padding:24px">No actions of this type.</td></tr>`;
+  }
+
+  function renderAttention() {
+    const overdue = FLAGS.filter(isOverdue).length;
+    const unassignedFlags = FLAGS.filter(f => f.ther === "Unassigned" && isOpen(f)).length;
+    const items = [
+      ["High flags overdue for review", overdue, overdue ? "bad" : "zero"],
+      ["Therapist alerts that failed", 1, "bad"],
+      ["Open flags with no therapist", unassignedFlags, unassignedFlags ? "" : "zero"],
+      ["Patients inactive for 7+ days", 3, ""]
+    ];
+    $("attn").innerHTML = items.map(([label, n, cls]) =>
+      `<li>${label} <span class="count-pill ${cls}">${n}</span></li>`).join("");
+  }
+
+  function renderConvo() {
+    const c = CONVO[range], t = RANGES[range].title.split(",")[0];
+    $("convoSub").textContent = t;
+    $("convo").innerHTML = `
+      <div class="sys-item"><div class="top"><span class="name">Conversations</span></div><div class="big">${c.n.toLocaleString()}</div><div class="hint">${t}</div></div>
+      <div class="sys-item"><div class="top"><span class="name">Average messages</span></div><div class="big">${c.avgMsgs}</div><div class="hint">Per conversation</div></div>
+      <div class="sys-item"><div class="top"><span class="name">Average length</span></div><div class="big">${c.avgMin} min</div><div class="hint">Per conversation</div></div>
+      <div class="sys-item"><div class="top"><span class="name">No activity</span></div><div class="big">${c.none}</div><div class="hint">Active patients with no conversation</div></div>`;
+  }
+  function renderUsers() {
+    $("userRows").innerHTML = USERS.map(u => `<tr><td>${u.role}</td><td class="num">${u.total}</td><td class="num">${u.active}</td><td class="num">${u.total - u.active}</td><td>${u.last}</td></tr>`).join("");
+  }
+  function renderKb() {
+    $("kbStats").innerHTML = `
+      <div class="sys-item"><div class="top"><span class="name">Documents</span></div><div class="big">${KB.total}</div><div class="hint">Last updated ${KB.updated}</div></div>
+      <div class="sys-item"><div class="top"><span class="name">Indexed</span><span class="badge ok">OK</span></div><div class="big">${KB.indexed}</div><div class="hint">Available to the assistant</div></div>
+      <div class="sys-item"><div class="top"><span class="name">Pending</span></div><div class="big">${KB.pending}</div><div class="hint">Waiting to be indexed</div></div>
+      <div class="sys-item"><div class="top"><span class="name">Failed</span>${KB.failed ? '<span class="badge warn">Check</span>' : '<span class="badge ok">OK</span>'}</div><div class="big">${KB.failed}</div><div class="hint">Need a re-upload</div></div>`;
+    $("kbRows").innerHTML = KB_ISSUES.map(d => `<tr><td>${d.doc}</td><td>${d.added}</td><td><span class="badge ${d.status === "Failed" ? "warn" : "medium"}">${d.status}</span></td><td><span class="code">${d.detail}</span></td></tr>`).join("");
+  }
+
+  function renderAll() {
+    renderConvo(); renderUsers(); renderKb();
+    renderTiles(); renderChart(); renderCaseload();
+    renderFlags(); renderRules(); renderAudit(); renderAttention();
+  }
+
+  // ---------- Events ----------
+  document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(x => {
+      const on = x === t;
+      x.setAttribute("aria-selected", on);
+      $("p-" + x.dataset.tab).hidden = !on;
+    });
+  }));
+
+  $("range").addEventListener("change", e => {
+    range = e.target.value;
+    renderTiles(); renderChart(); renderConvo();
+  });
+  $("flagFilter").addEventListener("change", e => { flagFilter = e.target.value; renderFlags(); });
+  $("auditFilter").addEventListener("change", e => { auditFilter = e.target.value; renderAudit(); });
+
+  $("thrHours").addEventListener("input", e => {
+    const v = parseFloat(e.target.value);
+    if (!isNaN(v) && v > 0) { threshold = v; renderTiles(); renderFlags(); renderAttention(); }
+  });
+  $("saveThr").addEventListener("click", () => {
+    $("statusNote").textContent = `Thresholds updated for this preview (${threshold} hours, ${$("thrErr").value}% errors). Saving is not connected in this proof of concept. Real changes would be recorded in the audit log.`;
+  });
+  $("exportBtn").addEventListener("click", () => {
+    $("statusNote").textContent = "Export is not connected in this proof of concept. A real export would contain counts only and be recorded in the audit log.";
+  });
+
+  renderAll();
+</script>
+</body>
+</html>
