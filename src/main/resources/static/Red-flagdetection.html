@@ -398,7 +398,7 @@ dialog h2 { font-size: 1.25rem; font-weight: 600; color: var(--plum); margin-bot
         <p>Four ways to detect a red flag, side by side.</p>
       </div>
       <table class="data compare" style="min-width: 900px">
-        <thead><tr><th></th><th>Keyword</th><th>Pattern</th><th>Model-assisted</th><th>Hybrid</th></tr></thead>
+        <!--thead><tr><th></th><th>Keyword</th><th>Pattern</th><th>Model-assisted</th><th>Hybrid</th></tr></thead-->
         <tbody>
           <tr><td>Finds wording not on the list</td><td>No</td><td>Some (spelling variants)</td><td>Yes (paraphrase, slang, context)</td><td>Yes</td></tr>
           <tr><td>Understands negation and context</td><td>No</td><td>No</td><td>Often, not always</td><td>Partly</td></tr>
@@ -615,7 +615,7 @@ dialog h2 { font-size: 1.25rem; font-weight: 600; color: var(--plum); margin-bot
       const pct = Math.round(r.caught / r.total * 100);
       return `<div class="bar-row"><div class="meter-top"><span>${r.name}</span><span class="v">${r.caught} of ${r.total} caught · ${r.fp} false alarm${r.fp === 1 ? "" : "s"}</span></div>
         <div class="meter"><span style="width:${pct}%"></span></div></div>`;
-    }).join("") + `<div class="bar-row"><div class="meter-top"><span>Model-assisted</span><span class="v">Not evaluated</span></div><div class="meter"><span style="width:0"></span></div></div>`;
+    }).join("") 
   }
 
   // ---------- Try a message ----------
@@ -652,7 +652,7 @@ dialog h2 { font-size: 1.25rem; font-weight: 600; color: var(--plum); margin-bot
     $("tryOut").innerHTML = `
       <div class="col"><h3>Keyword</h3>${hitList(kw)}</div>
       <div class="col"><h3>Pattern</h3>${hitList(px)}</div>
-      <div class="col off"><h3>Model-assisted</h3><p class="note">Not connected in this proof of concept. A model check would appear here with its confidence and reason.</p></div>
+      
       <div class="col" style="grid-column: 1 / -1"><h3>Combined result</h3>${combined.length
         ? combined.map(c => `<p style="margin-bottom:8px">${esc(`Rule "${c.rule.name}" (${c.rule.sev.toUpperCase()}, version ${c.rule.ver}) flagged this because of: ${c.ev.map(h => (h.m === "KEYWORD" ? "keyword" : "pattern match") + ` "${h.text}" at characters ${h.s}-${h.e}`).join("; ")}.`)}</p>`).join("")
         : "<p class='note'>No flag raised. That does not mean the message is safe.</p>"}</div>`;
