@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anchored – Red-flag detection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --plum: #743a48;
+  --plum-dark: #5e2e3a;
+  --blush: #fadcdc;
+  --peach: #fdeee3;
+  --text: #4a2f36;
+  --muted: #6a565b;
+  --error: #9b1c31;
+  --border: #ecd9d6;
+  --surface: rgba(255, 255, 255, 0.82);
+  --amber: #d9b84a;
+  --font: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font);
+  color: var(--text);
+  line-height: 1.5;
+  background:
+    radial-gradient(ellipse 70% 50% at 85% 0%, rgba(221, 133, 144, 0.35), transparent 70%),
+    linear-gradient(90deg, var(--peach), var(--blush));
+}
+h1, h2, h3, p { margin: 0; }
+:focus-visible { outline: 3px solid var(--plum); outline-offset: 2px; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* header */
+.header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 24px;
+  align-items: center;
+  padding: 10px 48px;
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid var(--border);
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo {
+  width: 60px; height: 60px; border-radius: 14px;
+  object-fit: contain; display: block;
+}
+.brand-name { font-weight: 600; font-size: 1.9rem; line-height: 1.1; color: var(--plum); }
+.brand-sub { color: var(--muted); font-size: 0.9rem; white-space: nowrap; }
+.nav { display: flex; gap: 8px; justify-self: center; flex-wrap: wrap; justify-content: center; }
+.nav a {
+  padding: 8px 16px; border-radius: 999px; color: var(--muted);
+  text-decoration: none; font-size: 1rem; white-space: nowrap;
+}
+.nav a:hover { color: var(--plum); }
+.nav a[aria-current="page"] { background: var(--blush); color: var(--plum); }
+.user-area { justify-self: end; display: flex; align-items: center; gap: 16px; }
+.user-name { color: var(--muted); font-size: 0.9rem; }
+.banner {
+  background: var(--plum-dark); color: #fff; text-align: center;
+  padding: 10px 16px; font-size: 0.9rem;
+}
+
+/* page */
+.page { max-width: 1320px; margin: 0 auto; padding: 32px 24px 48px; }
+.page-head {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
+}
+h1 { font-size: 1.75rem; font-weight: 600; color: var(--plum); line-height: 1.2; margin-bottom: 8px; }
+.intro-text { color: var(--muted); max-width: 680px; }
+.head-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.head-actions label { font-size: 0.85rem; color: var(--muted); }
+
+/* controls */
+select, input[type="number"] {
+  font: inherit; font-size: 0.9rem; color: var(--text);
+  background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px;
+}
+.btn {
+  font: inherit; font-size: 0.9rem; cursor: pointer; padding: 8px 24px;
+  border-radius: 999px; background: transparent; color: var(--plum);
+  border: 1px solid var(--plum);
+}
+.btn:hover { background: var(--blush); }
+.btn.primary { background: var(--plum); color: #fff; }
+.btn.primary:hover { background: var(--plum-dark); }
+
+/* tabs */
+.tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.tab {
+  font: inherit; font-size: 0.9rem; cursor: pointer; padding: 8px 20px;
+  border-radius: 999px; background: #fff; color: var(--text); border: 1px solid var(--border);
+}
+.tab:hover { color: var(--plum); }
+.tab[aria-selected="true"] { background: var(--plum); color: #fff; border-color: var(--plum); }
+.panel[hidden] { display: none; }
+
+/* layout */
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; }
+.stack { display: flex; flex-direction: column; gap: 24px; }
+aside { display: flex; flex-direction: column; gap: 16px; }
+aside h2 { font-size: 1rem; font-weight: 600; color: var(--plum); margin-bottom: 12px; }
+aside .card p { font-size: 0.95rem; margin-bottom: 10px; }
+
+/* cards */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 24px; padding: 24px;
+}
+.card h2 { font-size: 1rem; font-weight: 600; color: var(--plum); margin-bottom: 4px; }
+.card .sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; }
+.note { color: var(--muted); font-size: 0.9rem; }
+
+/* tiles */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; }
+.tile {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 18px 20px;
+}
+.tile .label { font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
+.tile .value { font-size: 1.75rem; font-weight: 600; color: var(--plum); line-height: 1.2; }
+.tile .hint { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+.tile.alert { border-color: var(--error); }
+.tile.alert .value { color: var(--error); }
+
+/* badges */
+.badge {
+  display: inline-block; padding: 2px 12px; border-radius: 999px;
+  font-size: 0.8rem; white-space: nowrap;
+}
+.badge.high { background: var(--error); color: #fff; }
+.badge.medium { background: #f6e7ae; color: #5c4a08; }
+.badge.ok { background: #dde9de; color: #2f4a3f; }
+.badge.warn { background: #f6e7ae; color: #5c4a08; }
+.badge.bad { background: var(--error); color: #fff; }
+.badge.neutral { background: #f1e6e4; color: var(--muted); }
+.badge.pending { background: #f4dcd2; color: #6b3a2a; }
+
+/* tables */
+.table-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 24px; overflow-x: auto;
+}
+.table-box .table-title { padding: 20px 24px 0; }
+.table-box .table-title h2 { font-size: 1rem; font-weight: 600; color: var(--plum); }
+.table-box .table-title p { font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+table.data { width: 100%; min-width: 640px; border-collapse: collapse; }
+.data th {
+  text-align: left; font-weight: 400; font-size: 0.85rem; color: var(--muted);
+  padding: 14px 10px;
+}
+.data td {
+  padding: 12px 10px; vertical-align: middle; border-top: 1px solid var(--border);
+  font-size: 0.9rem; white-space: nowrap;
+}
+.data th:first-child, .data td:first-child { padding-left: 24px; }
+.data th:last-child, .data td:last-child { padding-right: 24px; }
+.data tr.overdue { background: rgba(155, 28, 49, 0.07); }
+.data .num { text-align: right; }
+.code { font-size: 0.75rem; color: var(--muted); display: block; }
+.filter-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.filter-row label { font-size: 0.85rem; color: var(--muted); }
+
+/* chart */
+.chart { width: 100%; height: auto; display: block; }
+.chart text { font-family: var(--font); font-size: 11px; fill: var(--muted); }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.legend { display: flex; gap: 18px; font-size: 0.85rem; color: var(--muted); margin-top: 8px; flex-wrap: wrap; }
+.legend span::before {
+  content: ""; display: inline-block; width: 12px; height: 12px;
+  border-radius: 4px; margin-right: 6px; vertical-align: -1px;
+}
+.legend .l-high::before { background: var(--error); }
+.legend .l-med::before { background: var(--amber); }
+
+/* meters */
+.meter-row { margin-bottom: 16px; }
+.meter-row:last-child { margin-bottom: 0; }
+.meter-top { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 6px; gap: 12px; }
+.meter-top .v { font-weight: 600; color: var(--plum); }
+.meter { height: 10px; background: #f1e6e4; border-radius: 999px; overflow: hidden; }
+.meter > span { display: block; height: 100%; background: var(--plum); border-radius: 999px; }
+.meter.warn > span { background: var(--amber); }
+.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+
+/* system cards */
+.sys-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.sys-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 18px 20px;
+}
+.sys-item .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+.sys-item .name { font-size: 0.9rem; color: var(--muted); }
+.sys-item .big { font-size: 1.4rem; font-weight: 600; color: var(--plum); }
+.sys-item .hint { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+/* attention list */
+.attn { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.attn li { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 0.95rem; }
+.count-pill {
+  display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 8px;
+  border-radius: 999px; background: #f6e7ae; color: #5c4a08; font-size: 0.85rem;
+}
+.count-pill.zero { background: #dde9de; color: #2f4a3f; }
+.count-pill.bad { background: var(--error); color: #fff; }
+
+/* threshold form */
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
+.field input { width: 100%; }
+.card .btn.full { width: 100%; }
+.status-note { font-size: 0.85rem; color: var(--muted); margin-top: 12px; min-height: 1.3em; }
+.audit-note { font-size: 0.85rem; color: var(--muted); padding: 0 4px; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 800px) {
+  .header { grid-template-columns: 1fr; padding: 10px 24px; }
+  .nav { justify-self: start; }
+  .user-area { justify-self: start; }
+}
+
+/* shared controls */
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.toolbar input[type="search"], .field input[type="text"], .field textarea, .field select {
+  font: inherit; font-size: 0.9rem; color: var(--text); width: 100%;
+  background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px;
+}
+.toolbar input[type="search"] { width: 260px; max-width: 100%; }
+.toolbar .spacer { flex: 1; }
+.field textarea { min-height: 120px; resize: vertical; }
+.field .hint { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+.field .err { font-size: 0.85rem; color: var(--error); margin-top: 4px; min-height: 1.2em; }
+.field.check label { display: flex; gap: 10px; align-items: flex-start; font-size: 0.95rem; color: var(--text); }
+.field.check input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--plum); }
+.row-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.link-btn {
+  font: inherit; font-size: 0.85rem; background: none; border: 0; color: var(--plum);
+  cursor: pointer; text-decoration: underline; padding: 4px 2px;
+}
+.link-btn:disabled { color: var(--muted); cursor: not-allowed; text-decoration: none; }
+.doc-title { font-weight: 500; color: var(--text); }
+.switch { position: relative; display: inline-block; width: 42px; height: 24px; vertical-align: middle; }
+.switch input { opacity: 0; width: 100%; height: 100%; margin: 0; position: absolute; inset: 0; cursor: pointer; z-index: 1; }
+.switch .track { position: absolute; inset: 0; background: #d9c8c6; border-radius: 999px; transition: background .15s; }
+.switch .track::after {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
+  background: #fff; border-radius: 50%; transition: transform .15s;
+}
+.switch input:checked + .track { background: var(--plum); }
+.switch input:checked + .track::after { transform: translateX(18px); }
+.switch input:disabled { cursor: not-allowed; }
+.switch input:disabled + .track { opacity: .45; }
+.switch input:focus-visible + .track { outline: 3px solid var(--plum); outline-offset: 2px; }
+dialog {
+  border: 1px solid var(--border); border-radius: 24px; padding: 0; width: min(560px, calc(100vw - 32px));
+  background: #fff; color: var(--text); font-family: var(--font);
+}
+dialog::backdrop { background: rgba(94, 46, 58, 0.45); }
+dialog form { padding: 28px; }
+dialog h2 { font-size: 1.25rem; font-weight: 600; color: var(--plum); margin-bottom: 18px; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; }
+.changes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem; }
+.changes li span { display: block; color: var(--muted); font-size: 0.78rem; }
+.empty { padding: 28px 24px; color: var(--muted); }
+
+/* detection page */
+.disclaimer {
+  background: rgba(255,255,255,0.9); border: 1px solid var(--plum); border-left-width: 6px;
+  border-radius: 16px; padding: 14px 18px; margin-bottom: 20px; font-size: 0.95rem;
+}
+.disclaimer strong { color: var(--plum); }
+.method-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.mchip { border-radius: 999px; padding: 1px 10px; font-size: 0.75rem; background: #f1e6e4; color: var(--muted); }
+.mchip.KEYWORD { background: #e6ece5; color: #2f4a3f; }
+.mchip.PATTERN { background: #f6e7ae; color: #5c4a08; }
+.mchip.LLM { background: #f4dcd2; color: #6b3a2a; }
+.mchip.ACTIVITY { background: #e8e3ee; color: #4b3a63; }
+.ev { border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; background: #fffaf8; font-size: 0.9rem; }
+.ev .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+.ev code, .match { background: #f1e6e4; color: var(--text); border-radius: 6px; padding: 1px 6px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.85rem; }
+.ev .pos { color: var(--muted); font-size: 0.8rem; }
+.facts { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 0.88rem; margin: 12px 0; }
+.facts dt { color: var(--muted); } .facts dd { margin: 0; }
+.warnbox { background: #fbf0cf; color: #5c4a08; border-radius: 12px; padding: 10px 14px; font-size: 0.88rem; margin-bottom: 12px; }
+.compare th, .compare td { white-space: normal; vertical-align: top; }
+.compare td:first-child { font-weight: 500; }
+.cols3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 16px; }
+.col { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 16px 18px; font-size: 0.9rem; }
+.col h3 { font-size: 0.95rem; font-weight: 600; color: var(--plum); margin-bottom: 8px; }
+.col.off { opacity: 0.7; border-style: dashed; }
+.col ul { margin: 6px 0 0; padding-left: 18px; }
+.examples { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 14px; }
+.examples .link-btn { border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; text-decoration: none; background: #fff; }
+.examples .link-btn:hover { background: var(--blush); }
+.bar-row { margin-bottom: 14px; }
+.limit-list { margin: 8px 0 0; padding-left: 18px; font-size: 0.92rem; }
+.limit-list li { margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="brand">
+    <img class="logo" src="images/logo.png" alt="Anchored Support Services logo" width="60" height="60">
+    <div>
+      <div class="brand-name">Anchored</div>
+      <div class="brand-sub">Administration</div>
+    </div>
+  </div>
+  <nav class="nav" aria-label="Primary">
+    <a href="#">Users</a>
+    <a href="#">Knowledge base</a>
+    <a href="#">Red-flag rules</a>
+    <a href="#" aria-current="page">Red-flag detection</a>
+    <a href="#">Monitoring</a>
+  </nav>
+  <div class="user-area">
+    <span class="user-name">Riley Chen · Administrator</span>
+  </div>
+</header>
+
+<div class="banner">Synthetic data only. Proof of concept.</div>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <h1>Red-flag detection</h1>
+      <p class="intro-text">Every patient message is checked against the configured rules. This page shows what was flagged, why it was flagged, and how the different detection methods compare.</p>
+    </div>
+  </div>
+
+  <div class="disclaimer" role="note">
+    <strong>This is not a guaranteed clinical safety system.</strong>
+    It can miss concerning messages (false negatives) and flag harmless ones (false positives), especially when it has to interpret natural language. A therapist reviews every flag, and no flag does not mean a message is safe.
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Detection sections">
+    <button class="tab" role="tab" id="t-events" data-tab="events" aria-controls="p-events" aria-selected="true">Detections</button>
+    <button class="tab" role="tab" id="t-compare" data-tab="compare" aria-controls="p-compare" aria-selected="false">Compare methods</button>
+    <button class="tab" role="tab" id="t-try" data-tab="try" aria-controls="p-try" aria-selected="false">Try a message</button>
+  </div>
+
+  <!-- Detections -->
+  <div class="panel stack" id="p-events" role="tabpanel" aria-labelledby="t-events">
+    <div class="tiles" id="tiles"></div>
+
+    <div>
+      <div class="toolbar">
+        <label class="visually-hidden" for="q">Search by flag, rule or patient</label>
+        <input type="search" id="q" placeholder="Search flag, rule or patient ID">
+        <label class="visually-hidden" for="fSev">Severity</label>
+        <select id="fSev"><option value="all">All severities</option><option>High</option><option>Medium</option></select>
+        <label class="visually-hidden" for="fMethod">Found by</label>
+        <select id="fMethod">
+          <option value="all">Any method</option>
+          <option value="KEYWORD">Keyword</option><option value="PATTERN">Pattern</option>
+          <option value="LLM">Model</option><option value="ACTIVITY">Activity check</option>
+        </select>
+        <label class="visually-hidden" for="fStatus">Review status</label>
+        <select id="fStatus">
+          <option value="all">Any status</option><option value="Unreviewed">Unreviewed</option><option value="Reviewed">Reviewed</option>
+        </select>
+        <label class="visually-hidden" for="fCheck">Check result</label>
+        <select id="fCheck">
+          <option value="all">Any check result</option><option value="incomplete">Incomplete checks only</option>
+        </select>
+      </div>
+
+      <div class="table-box">
+        <table class="data" style="min-width: 1000px">
+          <thead><tr>
+            <th>Flag</th><th>Rule</th><th>Severity</th><th>Patient</th><th>Found by</th><th>Raised</th><th>Check</th><th>Review</th><th><span class="visually-hidden">Actions</span></th>
+          </tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p class="note" style="margin-top:10px">Patients appear by ID only. Only the matched words are kept as evidence, never the full message.</p>
+    </div>
+  </div>
+
+  <!-- Compare -->
+  <div class="panel stack" id="p-compare" role="tabpanel" aria-labelledby="t-compare" hidden>
+    <div class="table-box">
+      <div class="table-title">
+        <h2>Advantages and limitations</h2>
+        <p>Four ways to detect a red flag, side by side.</p>
+      </div>
+      <table class="data compare" style="min-width: 900px">
+        <thead><tr><th></th><th>Keyword</th><th>Pattern</th><th>Model-assisted</th><th>Hybrid</th></tr></thead>
+        <tbody>
+          <tr><td>Finds wording not on the list</td><td>No</td><td>Some (spelling variants)</td><td>Yes (paraphrase, slang, context)</td><td>Yes</td></tr>
+          <tr><td>Understands negation and context</td><td>No</td><td>No</td><td>Often, not always</td><td>Partly</td></tr>
+          <tr><td>Same message, same answer</td><td>Yes</td><td>Yes</td><td>No, can vary between runs</td><td>Rule part: yes</td></tr>
+          <tr><td>Can explain why</td><td>Exactly, the matched phrase</td><td>Exactly, the matched text</td><td>The model's own words, which may be wrong</td><td>Both kinds</td></tr>
+          <tr><td>Speed and cost</td><td>Instant, no cost</td><td>Instant, no cost</td><td>Slower, cost per message</td><td>Model cost remains</td></tr>
+          <tr><td>If the provider is down</td><td>Works</td><td>Works</td><td>Does not work</td><td>Works, marked incomplete</td></tr>
+          <tr><td>Privacy</td><td>Stays in the system</td><td>Stays in the system</td><td>Message goes to a provider (needs sponsor approval)</td><td>Same as model</td></tr>
+          <tr><td>Main risks</td><td>Many false alarms and misses</td><td>Hard to write and maintain</td><td>Wrong or inconsistent answers, prompt injection, changes when the model is updated</td><td>More complex to run and test</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h2>Recommended approach: hybrid</h2>
+        <p class="sub">Subject to sponsor decision</p>
+        <ul class="limit-list">
+          <li>Keyword and pattern checks always run and are never overruled.</li>
+          <li>A model can only <strong>add</strong> flags. It cannot remove or downgrade one.</li>
+          <li>Severity always comes from the rule, never from the model.</li>
+          <li>If a check fails, the others still decide and the result is marked <em>incomplete</em>.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Known limits of rule-based checks</h2>
+        <p class="sub">Shown on the Try a message tab</p>
+        <ul class="limit-list">
+          <li><strong>Negation:</strong> "I don't have thoughts of hurting myself" still matches.</li>
+          <li><strong>Slang and paraphrase:</strong> "nobody would notice if I disappeared" matches nothing.</li>
+          <li><strong>Time:</strong> "I felt hopeless last year" matches as if it were now.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Demonstration results</h2>
+      <p class="sub">10 invented messages, labelled by the developer. This shows the trade-offs. It is not an accuracy measure.</p>
+      <div id="bars"></div>
+      <p class="note">The model column is not evaluated yet. It needs a real model and a larger set of messages labelled by clinicians.</p>
+    </div>
+  </div>
+
+  <!-- Try -->
+  <div class="panel" id="p-try" role="tabpanel" aria-labelledby="t-try" hidden>
+    <div class="card">
+      <h2>Try a message</h2>
+      <p class="sub">Type or pick a sentence to see what each method finds.</p>
+      <div class="field">
+        <label for="tryText">Sample message</label>
+        <textarea id="tryText" style="min-height:80px" maxlength="1000"></textarea>
+      </div>
+      <div class="examples" id="examples" aria-label="Example messages"></div>
+      <button class="btn primary" type="button" id="tryBtn">Check</button>
+      <div id="tryNote" class="note" style="margin-top:12px" role="status"></div>
+    </div>
+    <div class="cols3" id="tryOut"></div>
+  </div>
+</main>
+
+<dialog id="dlg" aria-labelledby="dlgTitle">
+  <form method="dialog" id="dlgBody" style="padding:28px">
+    <h2 id="dlgTitle">Why was this flagged?</h2>
+    <div id="dlgContent"></div>
+    <div class="dialog-actions"><button class="btn primary" value="close">Close</button></div>
+  </form>
+</dialog>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const METHOD_LABEL = { KEYWORD: "Keyword", PATTERN: "Pattern", LLM: "Model", ACTIVITY: "Activity check" };
+
+  // ---------- Synthetic data ----------
+  
+  const EVENTS = [
+    { id: "F-1052", rule: "Self-harm language", ver: 3, sev: "High",   patient: "P-0231", ther: "Dr. Morgan Hale", ago: 0.8, review: null, outcome: "", complete: true,  warnings: [],
+      evidence: [{ m: "KEYWORD", text: "want to die", s: 18, e: 29 }] },
+    { id: "F-1051", rule: "Hopelessness", ver: 1, sev: "Medium", patient: "P-0188", ther: "Dr. Morgan Hale", ago: 3.5, review: null, outcome: "", complete: true,  warnings: [],
+      evidence: [{ m: "KEYWORD", text: "no point", s: 41, e: 49 }] },
+    { id: "F-1050", rule: "Self-harm language", ver: 3, sev: "High",   patient: "P-0104", ther: "Dr. Alex Kim", ago: 5.2, review: null, outcome: "", complete: true,  warnings: [],
+      evidence: [{ m: "LLM", conf: 0.88, why: "Says nobody would notice if they disappeared." }] },
+    { id: "F-1049", rule: "Missed check-ins", ver: 2, sev: "Medium", patient: "P-0302", ther: "Unassigned", ago: 26, review: null, outcome: "", complete: true,  warnings: [],
+      evidence: [{ m: "ACTIVITY", why: "No activity for 6 days. The rule flags after 5 days." }] },
+    { id: "F-1048", rule: "Substance use", ver: 2, sev: "Medium", patient: "P-0127", ther: "Dr. Alex Kim", ago: 30, review: 2.1, outcome: "Confirmed", complete: true,  warnings: [],
+      evidence: [{ m: "KEYWORD", text: "relapsed", s: 2, e: 10 }] },
+    { id: "F-1047", rule: "Self-harm language", ver: 3, sev: "High",   patient: "P-0231", ther: "Dr. Morgan Hale", ago: 52, review: 0.4, outcome: "Confirmed", complete: true,  warnings: [],
+      evidence: [{ m: "PATTERN", text: "k1lling myself", s: 24, e: 38 }, { m: "LLM", conf: 0.93, why: "Describes thoughts of ending their own life." }] },
+    { id: "F-1046", rule: "Sleep disruption", ver: 1, sev: "Medium", patient: "P-0140", ther: "Dr. Morgan Hale", ago: 70, review: 5.5, outcome: "False positive", complete: true,  warnings: [],
+      evidence: [{ m: "KEYWORD", text: "up all night", s: 12, e: 24 }] },
+    { id: "F-1045", rule: "Hopelessness", ver: 1, sev: "High",   patient: "P-0188", ther: "Dr. Alex Kim", ago: 98, review: 0.9, outcome: "Confirmed", complete: true,  warnings: [],
+      evidence: [{ m: "KEYWORD", text: "nothing will change", s: 7, e: 26 }] },
+    { id: "F-1044", rule: "Substance use", ver: 2, sev: "Medium", patient: "P-0127", ther: "Dr. Alex Kim", ago: 121, review: 3.2, outcome: "Unclear", complete: false,
+      warnings: ["llm: The model check failed: IOException. The keyword result stands, but the model did not get to check this message."],
+      evidence: [{ m: "KEYWORD", text: "using again", s: 30, e: 41 }] },
+    { id: "F-1043", rule: "Missed check-ins", ver: 2, sev: "Medium", patient: "P-0099", ther: "Dr. Morgan Hale", ago: 146, review: 8.0, outcome: "False positive", complete: true,  warnings: [],
+      evidence: [{ m: "ACTIVITY", why: "No activity for 5 days. The rule flags after 5 days." }] }
+  ];
+  const DETECTOR = "rules-1+kw+rx+llm:model-pending";
+
+  const RESULTS = [
+    { name: "Keyword", caught: 3, total: 6, fp: 2 },
+    { name: "Pattern", caught: 1, total: 6, fp: 0 },
+    { name: "Keyword + pattern", caught: 4, total: 6, fp: 2 }
+  ];
+
+  
+  const SAMPLE_RULES = [
+    { id: 1, ver: 3, name: "Self-harm language", sev: "High",
+      phrases: ["want to die", "kill myself", "end it all", "hurt myself", "no reason to live"],
+      patterns: ["\\bk[i1]ll(ing)?\\s+my\\s*self\\b", "\\bsuicid(e|al)\\b"] },
+    { id: 2, ver: 1, name: "Hopelessness", sev: "Medium",
+      phrases: ["hopeless", "no point", "can't go on", "nothing will change"], patterns: [] },
+    { id: 3, ver: 2, name: "Substance use", sev: "Medium",
+      phrases: ["drinking again", "relapsed", "got high", "using again"], patterns: [] }
+  ];
+  const EXAMPLES = [
+    ["I want to die", ""],
+    ["sometimes i think about k1lling myself", "Spelling variant: only the pattern method finds it."],
+    ["i wanna kms", "Slang: nothing finds it. Only a model might."],
+    ["I can't stop thinking nobody would notice if I disappeared", "Paraphrase: nothing here finds it. Only a model might."],
+    ["I don't have any thoughts of wanting to hurt myself", "Negation: keyword matches even though the message says the opposite."],
+    ["Last year I felt hopeless, but I'm doing much better now", "Past tense: matches as if it were happening now."],
+    ["Slept well and had a good walk today", ""]
+  ];
+
+  // ---------- Helpers ----------
+  const F = { q: "", sev: "all", method: "all", status: "all", check: "all" };
+  function ago(h) {
+    if (h < 1) return Math.round(h * 60) + " min ago";
+    if (h < 24) return (+h.toFixed(1)) + " h ago";
+    return Math.floor(h / 24) + " d " + Math.round(h % 24) + " h ago";
+  }
+  const dur = h => h < 1 ? Math.round(h * 60) + " min" : (+h.toFixed(1)) + " h";
+  const sevBadge = s => `<span class="badge ${s === "High" ? "high" : "medium"}">${s}</span>`;
+  const methodsOf = ev => [...new Set(ev.evidence.map(x => x.m))];
+  const chips = ev => `<div class="method-chips">${methodsOf(ev).map(m => `<span class="mchip ${m}">${METHOD_LABEL[m]}</span>`).join("")}</div>`;
+
+  function describe(x) {
+    if (x.m === "KEYWORD") return `keyword "${x.text}" at characters ${x.s}-${x.e}`;
+    if (x.m === "PATTERN") return `pattern match "${x.text}" at characters ${x.s}-${x.e}`;
+    if (x.m === "LLM") return `model classification (confidence ${x.conf.toFixed(2)}): ${x.why.replace(/\.$/, "")}`;
+    return x.why.replace(/\.$/, "");
+  }
+  const explanation = ev => `Rule "${ev.rule}" (${ev.sev.toUpperCase()}, version ${ev.ver}) flagged this because of: ${ev.evidence.map(describe).join("; ")}.`;
+
+  // ---------- Detections tab ----------
+  function renderTiles() {
+    const unrev = EVENTS.filter(e => e.review === null).length;
+    const incomplete = EVENTS.filter(e => !e.complete).length;
+    const modelOnly = EVENTS.filter(e => methodsOf(e).length === 1 && methodsOf(e)[0] === "LLM").length;
+    const fp = EVENTS.filter(e => e.outcome === "False positive").length;
+    const reviewed = EVENTS.filter(e => e.review !== null && e.outcome).length;
+    $("tiles").innerHTML = `
+      <div class="tile"><div class="label">Detections</div><div class="value">${EVENTS.length}</div><div class="hint">${unrev} unreviewed</div></div>
+      <div class="tile ${incomplete ? "alert" : ""}"><div class="label">Incomplete checks</div><div class="value">${incomplete}</div><div class="hint">A method failed while checking</div></div>
+      <div class="tile"><div class="label">Found only by the model</div><div class="value">${modelOnly}</div><div class="hint">Rules alone missed these</div></div>
+      <div class="tile"><div class="label">Marked false positive</div><div class="value">${fp}</div><div class="hint">Of ${reviewed} reviewed</div></div>`;
+  }
+
+  function matches(e) {
+    const q = F.q.trim().toLowerCase();
+    if (q && !(e.id + " " + e.rule + " " + e.patient).toLowerCase().includes(q)) return false;
+    if (F.sev !== "all" && e.sev !== F.sev) return false;
+    if (F.method !== "all" && !methodsOf(e).includes(F.method)) return false;
+    if (F.status === "Unreviewed" && e.review !== null) return false;
+    if (F.status === "Reviewed" && e.review === null) return false;
+    if (F.check === "incomplete" && e.complete) return false;
+    return true;
+  }
+
+  function renderRows() {
+    const list = EVENTS.filter(matches);
+    $("rows").innerHTML = list.length ? list.map(e => `<tr>
+      <td>${esc(e.id)}</td>
+      <td><span class="doc-title">${esc(e.rule)}</span><span class="code">Version ${e.ver}</span></td>
+      <td>${sevBadge(e.sev)}</td>
+      <td>${esc(e.patient)}</td>
+      <td>${chips(e)}</td>
+      <td>${ago(e.ago)}</td>
+      <td>${e.complete ? '<span class="badge ok">Complete</span>' : '<span class="badge warn">Incomplete</span>'}</td>
+      <td>${e.review === null ? '<span class="badge pending">Unreviewed</span>' : `<span class="badge ok">Reviewed</span><span class="code">In ${dur(e.review)} · ${esc(e.outcome)}</span>`}</td>
+      <td><button class="link-btn" data-why="${esc(e.id)}">Why flagged</button></td>
+    </tr>`).join("") : `<tr><td colspan="9" class="empty">No detections match these filters.</td></tr>`;
+  }
+
+  function openWhy(id) {
+    const e = EVENTS.find(x => x.id === id);
+    const ev = e.evidence.map(x => {
+      const pos = x.m === "KEYWORD" || x.m === "PATTERN" ? `<span class="pos">characters ${x.s}-${x.e}</span>` : "";
+      const body = x.m === "KEYWORD" || x.m === "PATTERN"
+        ? `Matched <code>${esc(x.text)}</code>`
+        : x.m === "LLM" ? `Model confidence ${x.conf.toFixed(2)}. Model's reason: <em>${esc(x.why)}</em>` : esc(x.why);
+      return `<div class="ev"><div class="top"><span class="mchip ${x.m}">${METHOD_LABEL[x.m]}</span>${pos}</div>${body}</div>`;
+    }).join("");
+    $("dlgContent").innerHTML = `
+      <p style="margin-bottom:12px"><strong>${esc(e.id)}</strong> · ${sevBadge(e.sev)} · patient ${esc(e.patient)}</p>
+      ${e.complete ? "" : `<div class="warnbox"><strong>This check was incomplete.</strong> ${e.warnings.map(esc).join(" ")}</div>`}
+      <p style="margin-bottom:12px">${esc(explanation(e))}</p>
+      ${ev}
+      <dl class="facts">
+        <dt>Rule</dt><dd>${esc(e.rule)}, version ${e.ver}</dd>
+        <dt>Severity</dt><dd>${e.sev}, set by the rule, not by a model</dd>
+        <dt>Detector</dt><dd>${esc(DETECTOR)}</dd>
+        <dt>Assigned to</dt><dd>${esc(e.ther)}</dd>
+      </dl>
+      <p class="note">Model reasons are generated text and can be wrong. They are shown as plain text only. The patient's full message is not stored with the flag.</p>`;
+    $("dlg").showModal();
+  }
+
+  // ---------- Compare tab ----------
+  function renderBars() {
+    $("bars").innerHTML = RESULTS.map(r => {
+      const pct = Math.round(r.caught / r.total * 100);
+      return `<div class="bar-row"><div class="meter-top"><span>${r.name}</span><span class="v">${r.caught} of ${r.total} caught · ${r.fp} false alarm${r.fp === 1 ? "" : "s"}</span></div>
+        <div class="meter"><span style="width:${pct}%"></span></div></div>`;
+    }).join("") + `<div class="bar-row"><div class="meter-top"><span>Model-assisted</span><span class="v">Not evaluated</span></div><div class="meter"><span style="width:0"></span></div></div>`;
+  }
+
+  // ---------- Try a message ----------
+  const NORM = s => s.replace(/[\u2018\u2019]/g, "'");
+  function keywordHits(text) {
+    const t = NORM(text), out = [];
+    for (const r of SAMPLE_RULES) for (const p of r.phrases) {
+      const rx = new RegExp("(?<![\\p{L}\\p{N}])" + NORM(p).trim().split(/\s+/).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("\\s+") + "(?![\\p{L}\\p{N}])", "giu");
+      let m; while ((m = rx.exec(t))) out.push({ m: "KEYWORD", rule: r, text: text.slice(m.index, m.index + m[0].length), s: m.index, e: m.index + m[0].length });
+    }
+    return out;
+  }
+  function patternHits(text) {
+    const t = NORM(text), out = [];
+    for (const r of SAMPLE_RULES) for (const p of r.patterns) {
+      const rx = new RegExp(p, "giu");
+      let m; while ((m = rx.exec(t))) { if (!m[0]) { rx.lastIndex++; continue; } out.push({ m: "PATTERN", rule: r, text: text.slice(m.index, m.index + m[0].length), s: m.index, e: m.index + m[0].length }); }
+    }
+    return out;
+  }
+  const hitList = hits => hits.length
+    ? `<ul>${hits.map(h => `<li>${esc(h.rule.name)} (${h.rule.sev}): <span class="match">${esc(h.text)}</span> <span class="pos">characters ${h.s}-${h.e}</span></li>`).join("")}</ul>`
+    : "<p class='note'>Nothing found.</p>";
+
+  function runTry() {
+    const text = $("tryText").value;
+    if (!text.trim()) { $("tryOut").innerHTML = ""; $("tryNote").textContent = "Type a sample sentence first."; return; }
+    const kw = keywordHits(text), px = patternHits(text), all = [...kw, ...px];
+    const ex = EXAMPLES.find(x => x[0] === text.trim());
+    $("tryNote").textContent = ex && ex[1] ? ex[1] : "";
+    const byRule = {};
+    all.forEach(h => (byRule[h.rule.id] = byRule[h.rule.id] || { rule: h.rule, ev: [] }).ev.push(h));
+    const combined = Object.values(byRule).sort((a, b) => (a.rule.sev === "High" ? 0 : 1) - (b.rule.sev === "High" ? 0 : 1));
+    $("tryOut").innerHTML = `
+      <div class="col"><h3>Keyword</h3>${hitList(kw)}</div>
+      <div class="col"><h3>Pattern</h3>${hitList(px)}</div>
+      <div class="col off"><h3>Model-assisted</h3><p class="note">Not connected in this proof of concept. A model check would appear here with its confidence and reason.</p></div>
+      <div class="col" style="grid-column: 1 / -1"><h3>Combined result</h3>${combined.length
+        ? combined.map(c => `<p style="margin-bottom:8px">${esc(`Rule "${c.rule.name}" (${c.rule.sev.toUpperCase()}, version ${c.rule.ver}) flagged this because of: ${c.ev.map(h => (h.m === "KEYWORD" ? "keyword" : "pattern match") + ` "${h.text}" at characters ${h.s}-${h.e}`).join("; ")}.`)}</p>`).join("")
+        : "<p class='note'>No flag raised. That does not mean the message is safe.</p>"}</div>`;
+  }
+
+  // ---------- Events ----------
+  document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(x => {
+      const on = x === t; x.setAttribute("aria-selected", on); $("p-" + x.dataset.tab).hidden = !on;
+    });
+  }));
+  $("q").addEventListener("input", e => { F.q = e.target.value; renderRows(); });
+  $("fSev").addEventListener("change", e => { F.sev = e.target.value; renderRows(); });
+  $("fMethod").addEventListener("change", e => { F.method = e.target.value; renderRows(); });
+  $("fStatus").addEventListener("change", e => { F.status = e.target.value; renderRows(); });
+  $("fCheck").addEventListener("change", e => { F.check = e.target.value; renderRows(); });
+  $("rows").addEventListener("click", e => { const b = e.target.closest("[data-why]"); if (b) openWhy(b.dataset.why); });
+  $("tryBtn").addEventListener("click", runTry);
+  $("examples").innerHTML = EXAMPLES.map((x, i) => `<button type="button" class="link-btn" data-ex="${i}">${esc(x[0].length > 40 ? x[0].slice(0, 38) + "…" : x[0])}</button>`).join("");
+  $("examples").addEventListener("click", e => { const b = e.target.closest("[data-ex]"); if (b) { $("tryText").value = EXAMPLES[+b.dataset.ex][0]; runTry(); } });
+
+  renderTiles(); renderRows(); renderBars();
+</script>
+</body>
+</html>
