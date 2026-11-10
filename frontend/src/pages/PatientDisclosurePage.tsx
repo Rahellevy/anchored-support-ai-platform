@@ -40,7 +40,7 @@ export function PatientDisclosurePage() {
   return (
     <div className={styles.screen}>
       <title>Before you start · Anchored</title>
-      <PatientHeader title="Anchored" />
+      <PatientHeader title="Anchored Support Services" />
 
       <div className={styles.cardWrap}>
         <div className={styles.card}>

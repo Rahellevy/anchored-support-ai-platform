@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
-namespace anchored.Chat;
+namespace anchored.Hubs;
 
 [Authorize(Roles = Roles.Patient)]
 public class ChatHub(AppDbContext db, IChatResponder responder) : Hub
@@ -12,6 +12,7 @@ public class ChatHub(AppDbContext db, IChatResponder responder) : Hub
     public async Task JoinConversation(Guid conversationId)
     {
         await GetOwnedConversationAsync(conversationId);
+        await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(conversationId));
     }
 
     public async Task SendMessage(Guid conversationId, string content)
@@ -32,12 +33,12 @@ public class ChatHub(AppDbContext db, IChatResponder responder) : Hub
         // TODO: RedFlagMatcher.FindMatchesAsync(content) → store hits, alert the assigned therapist
         
         // Save and broadcast the AI reply
-        var replyText = await responder.ReplyAsync(conversationId, content, Context.ConnectionAborted);
-        var reply = new Message { ConversationId = conversationId, Sender = MessageSender.Assistant, Content = replyText };
+        var response = await responder.ReplyAsync(conversationId, Context.ConnectionAborted);
+        var reply = new Message { ConversationId = conversationId, Sender = MessageSender.Assistant, Content = response.Text };
         db.Messages.Add(reply);
-        conversation.LastMessageAt = message.SentAt;
+        conversation.LastMessageAt = reply.SentAt;
         await db.SaveChangesAsync();
-        await Clients.Group(GroupName(conversationId)).SendAsync("ReceiveMessage", MessageDto.From(message));
+        await Clients.Group(GroupName(conversationId)).SendAsync("ReceiveMessage", MessageDto.From(reply));
     }
 
     private async Task<Conversation> GetOwnedConversationAsync(Guid id) =>

@@ -4,7 +4,7 @@ import { Badge } from '../../components/Badge'
 import { Button } from '../../components/Button'
 import { Card } from '../../components/Card'
 import type { MonitoringSummary } from '../../types/monitoring'
-import { formatDay, formatDayTime, pluralize } from '../../utils/format'
+import { formatDay, pluralize } from '../../utils/format'
 import { useSetAiReplies } from './useMonitoring'
 import styles from './monitoring.module.css'
 

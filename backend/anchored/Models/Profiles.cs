@@ -36,12 +36,16 @@ public class PatientProfileConfiguration : IEntityTypeConfiguration<PatientProfi
         builder.HasOne(p => p.User)
             .WithOne(u => u.PatientProfile)
             .HasForeignKey<PatientProfile>(p => p.UserId)
-            .OnDelete(DeleteBehavior.Cascade);                       // delete user -> delete profile
+            .OnDelete(DeleteBehavior.Cascade);              // delete user -> delete profile
 
         builder.HasOne(p => p.AssignedTherapist)
             .WithMany(t => t.Patients)
             .HasForeignKey(p => p.AssignedTherapistId)
-            .OnDelete(DeleteBehavior.SetNull);                       // therapist leaves -> patient unassigne
+            .OnDelete(DeleteBehavior.SetNull);             // therapist leaves -> patient unassigned
+
+        builder.HasOne(p => p.FirstUseDisclosureAck);
+
+        builder.HasOne(p => p.FirstChatDisclosureAck);
     }
 }
 

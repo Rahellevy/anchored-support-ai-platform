@@ -4,6 +4,9 @@
 # Log file
 *.log
 
+# Prod environment file
+.env
+
 # BlueJ files
 *.ctxt
 
@@ -19,6 +22,7 @@
 *.tar.gz
 *.rar
 
+logs/
 bin/
 obj/
 .idea/

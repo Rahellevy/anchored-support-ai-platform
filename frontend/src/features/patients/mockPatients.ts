@@ -1,9 +1,6 @@
 import type { Patient } from '../../types/patient'
 
-/**
- * Synthetic data for the therapist dashboard until the backend has a patients endpoint.
- * TODO: replace with an API call (e.g. GET /api/therapists/me/patients) in src/api/.
- */
+/** Therapist dashboard rows. See simulateNetwork.ts for how mocks are used. */
 export const mockPatients: Patient[] = [
   {
     id: 'p1',
@@ -14,6 +11,7 @@ export const mockPatients: Patient[] = [
     mediumFlags: 0,
     unreviewedConversations: 3,
     lastReviewed: 'Oct 1',
+    latestConversationId: 'c-jordan-1',
   },
   {
     id: 'p2',
@@ -24,6 +22,7 @@ export const mockPatients: Patient[] = [
     mediumFlags: 1,
     unreviewedConversations: 2,
     lastReviewed: 'Sep 30',
+    latestConversationId: 'c-sam-1',
   },
   {
     id: 'p3',
@@ -34,6 +33,7 @@ export const mockPatients: Patient[] = [
     mediumFlags: 0,
     unreviewedConversations: 0,
     lastReviewed: 'Today',
+    latestConversationId: 'c-priya-1',
   },
   {
     id: 'p4',
@@ -44,6 +44,7 @@ export const mockPatients: Patient[] = [
     mediumFlags: 0,
     unreviewedConversations: 0,
     lastReviewed: 'Oct 2',
+    latestConversationId: 'c-marcus-1',
   },
   {
     id: 'p5',
@@ -54,5 +55,6 @@ export const mockPatients: Patient[] = [
     mediumFlags: 0,
     unreviewedConversations: 0,
     lastReviewed: '—',
+    latestConversationId: null,
   },
 ]

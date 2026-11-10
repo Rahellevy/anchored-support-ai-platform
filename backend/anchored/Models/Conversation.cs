@@ -36,6 +36,8 @@ public record MessageDto(Guid Id, Guid ConversationId, MessageSender Sender, str
     public static MessageDto From(Message m) => new(m.Id, m.ConversationId, m.Sender, m.Content, m.SentAt);
 }
 
+public record ConversationRef(Guid Id);
+
 public class ConversationConfiguration : IEntityTypeConfiguration<Conversation>
 {
     public void Configure(EntityTypeBuilder<Conversation> builder)

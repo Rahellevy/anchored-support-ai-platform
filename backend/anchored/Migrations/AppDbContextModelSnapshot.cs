@@ -245,9 +245,6 @@ namespace anchored.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("DisclosureAck")
-                        .HasColumnType("boolean");
-
                     b.Property<DateTimeOffset>("LastMessageAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -260,9 +257,31 @@ namespace anchored.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PatientId", "LastMessageAt");
+                    b.HasIndex("PatientId")
+                        .IsUnique();
 
                     b.ToTable("conversations", (string)null);
+                });
+
+            modelBuilder.Entity("anchored.Models.DisclosureAcceptance", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("AcceptedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DisclosureAcceptance");
                 });
 
             modelBuilder.Entity("anchored.Models.Message", b =>
@@ -299,17 +318,60 @@ namespace anchored.Migrations
                     b.Property<string>("UserId")
                         .HasColumnType("text");
 
-                    b.Property<bool>("AckDisclosure")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("AssignedTherapistId")
                         .HasColumnType("text");
+
+                    b.Property<Guid?>("FirstChatDisclosureAckId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("FirstUseDisclosureAckId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("UserId");
 
                     b.HasIndex("AssignedTherapistId");
 
+                    b.HasIndex("FirstChatDisclosureAckId");
+
+                    b.HasIndex("FirstUseDisclosureAckId");
+
                     b.ToTable("patient_profiles", (string)null);
+                });
+
+            modelBuilder.Entity("anchored.Models.RedFlagRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("MatchType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Pattern")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Enabled");
+
+                    b.ToTable("red_flag_rules", (string)null);
                 });
 
             modelBuilder.Entity("anchored.Models.TherapistProfile", b =>
@@ -413,6 +475,14 @@ namespace anchored.Migrations
                         .HasForeignKey("AssignedTherapistId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("anchored.Models.DisclosureAcceptance", "FirstChatDisclosureAck")
+                        .WithMany()
+                        .HasForeignKey("FirstChatDisclosureAckId");
+
+                    b.HasOne("anchored.Models.DisclosureAcceptance", "FirstUseDisclosureAck")
+                        .WithMany()
+                        .HasForeignKey("FirstUseDisclosureAckId");
+
                     b.HasOne("anchored.Models.AppUser", "User")
                         .WithOne("PatientProfile")
                         .HasForeignKey("anchored.Models.PatientProfile", "UserId")
@@ -420,6 +490,10 @@ namespace anchored.Migrations
                         .IsRequired();
 
                     b.Navigation("AssignedTherapist");
+
+                    b.Navigation("FirstChatDisclosureAck");
+
+                    b.Navigation("FirstUseDisclosureAck");
 
                     b.Navigation("User");
                 });

@@ -21,6 +21,8 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       # Double underscore = nested config key (ConnectionStrings:Default)
       ConnectionStrings__Default: Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      OpenAI__ApiKey: ${OPENAI_API_KEY}
+      OpenAI__Model: ${OPENAI_MODEL}
     depends_on:
       db:
         condition: service_healthy

@@ -3,9 +3,6 @@ import { simulateNetwork } from '../mocks/simulateNetwork'
 import type {
   DocumentInput,
   KnowledgeDocument,
-  MatchedPassage,
-  MatchStrength,
-  QuestionTestResult,
 } from '../types/knowledgeBase'
 
 /** TODO(backend): httpClient.get<KnowledgeDocument[]>('/admin/knowledge-base') */
@@ -89,15 +86,15 @@ export async function saveDocument({
 
 // ----- mock search helpers -----
 
-const IGNORED = new Set(['what', 'your', 'have', 'with', 'that', 'this', 'about', 'from', 'when', 'there', 'would'])
+// const IGNORED = new Set(['what', 'your', 'have', 'with', 'that', 'this', 'about', 'from', 'when', 'there', 'would'])
 
 /** Lower-case words of 4+ letters, cut to 5 letters so "sleeping" matches "sleep". */
-function wordsOf(text: string): string[] {
-  return (text.toLowerCase().match(/[a-z]{4,}/g) ?? []).filter((w) => !IGNORED.has(w)).map((w) => w.slice(0, 5))
-}
-
-function strengthOf(score: number): MatchStrength {
-  if (score >= 3) return 'Strong'
-  if (score === 2) return 'Good'
-  return 'Weak'
-}
+// function wordsOf(text: string): string[] {
+//   return (text.toLowerCase().match(/[a-z]{4,}/g) ?? []).filter((w) => !IGNORED.has(w)).map((w) => w.slice(0, 5))
+// }
+//
+// function strengthOf(score: number): MatchStrength {
+//   if (score >= 3) return 'Strong'
+//   if (score === 2) return 'Good'
+//   return 'Weak'
+// }

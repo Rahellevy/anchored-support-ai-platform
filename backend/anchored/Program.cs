@@ -1,11 +1,15 @@
 using System.Text.Json.Serialization;
 using anchored;
 using anchored.Data;
+using anchored.Endpoints.Admin;
 using anchored.Endpoints.Auth;
+using anchored.Endpoints.Patient;
+using anchored.Hubs;
 using anchored.Setup;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,7 +41,8 @@ try
         .SetApplicationName("Anchored Support Services - Clinician AI");
 
 
-    builder.Services.AddSignalR();
+    builder.Services.AddSignalR()
+        .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));;
     builder.Services.AddHealthChecks();
     builder.Services.AddProblemDetails();
     builder.Services.ConfigureHttpJsonOptions(o =>
@@ -49,6 +54,7 @@ try
     //Features:
     builder.Services.AddAuthFeature();
     builder.Services.AddChatFeature();
+    builder.Services.AddRedFlagsFeature();
 
     var app = builder.Build();
 
@@ -58,11 +64,19 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
 
-    await app.MigrateAndSeedAsync();
+    if (app.Environment.IsDevelopment())
+    {
+        await app.MigrateAndSeedAsync();
+    }
 
     // Endpoints:
     var api = app.MapGroup("/api");
     api.MapAuthEndpoints();
+    api.MapPatientEndpoints();
+    api.MapAdminEndpoints();
+
+    app.MapHub<ChatHub>("/hubs/chat");
+    app.MapHealthChecks("/health").ShortCircuit();
 
     app.Run();
     

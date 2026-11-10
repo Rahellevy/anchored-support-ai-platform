@@ -11,13 +11,13 @@ import { USE_MOCKS } from './mockMode'
  */
 
 /** GET /api/conversations/mine → { id }, or null (404) if the patient has never chatted. */
-export async function getMyConversation(): Promise<{ id: string } | null> {
+export const getMyConversation = async (): Promise<{ id: string } | null> => {
   if (USE_MOCKS) {
     await simulateNetwork()
     return mockGetMyConversation()
   }
   try {
-    const { data } = await httpClient.get<{ id: string }>('/conversations/mine')
+    const { data } = await httpClient.get<{ id: string }>('/patients/conversations/mine')
     return data
   } catch (error) {
     if (isAxiosError(error) && error.response?.status === 404) return null
@@ -31,17 +31,17 @@ export async function getMyConversation(): Promise<{ id: string } | null> {
  * creating a second (a unique index on Conversations.PatientId guarantees it).
  * `firstName` is only used by the mock greeting.
  */
-export async function startMyConversation(firstName: string): Promise<{ id: string }> {
+export const startMyConversation = async (firstName: string): Promise<{ id: string }> => {
   if (USE_MOCKS) {
     await simulateNetwork()
     return mockStartMyConversation(firstName)
   }
-  const { data } = await httpClient.post<{ id: string }>('/conversations')
+  const { data } = await httpClient.post<{ id: string }>('/patients/conversations')
   return data
 }
 
 /** Messages in the conversation, oldest first. */
-export async function getMessages(conversationId: string): Promise<ChatMessage[]> {
+export const getMessages = async (conversationId: string): Promise<ChatMessage[]> => {
   if (USE_MOCKS) {
     await simulateNetwork()
     const messages = mockGetMessages(conversationId)
@@ -49,12 +49,12 @@ export async function getMessages(conversationId: string): Promise<ChatMessage[]
     return messages
   }
   // TODO: page this (?limit=50&before=...) — a single ongoing conversation keeps growing
-  const { data } = await httpClient.get<ChatMessage[]>(`/conversations/${conversationId}/messages`)
+  const { data } = await httpClient.get<ChatMessage[]>(`/patients/conversations/${conversationId}/messages`)
   return data
 }
 
 /** The patient's assigned therapist, for "your therapist, Dr. ..., can read this". */
-export async function getMyTherapist(): Promise<{ name: string } | null> {
+export const getMyTherapist = async (): Promise<{ name: string } | null> => {
   if (USE_MOCKS) {
     await simulateNetwork()
     return { name: 'Dr. Morgan Hale' }
