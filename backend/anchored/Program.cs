@@ -4,6 +4,7 @@ using anchored.Data;
 using anchored.Endpoints.Admin;
 using anchored.Endpoints.Auth;
 using anchored.Endpoints.Patient;
+using anchored.Endpoints.Therapist;
 using anchored.Hubs;
 using anchored.Setup;
 using Microsoft.AspNetCore.DataProtection;
@@ -73,7 +74,9 @@ try
     var api = app.MapGroup("/api");
     api.MapAuthEndpoints();
     api.MapPatientEndpoints();
+    api.MapTherapistEndpoints();
     api.MapAdminEndpoints();
+    api.MapAdminUserEndpoints();
 
     app.MapHub<ChatHub>("/hubs/chat");
     app.MapHealthChecks("/health").ShortCircuit();
