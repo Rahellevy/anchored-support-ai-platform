@@ -1,44 +1,43 @@
 import { useState, type FormEvent } from 'react'
 import { Button } from '../../components/Button'
 import { Card } from '../../components/Card'
-import type { DetectionMethod, NotifySettings, RedFlagCategory, Severity } from '../../types/flags'
-import { useSubmitCategory } from './useRedFlagCategories'
+import type {MatchType, RedFlagRule, Severity} from '../../types/redFlagRules'
+import { updateRedFlagRule } from "./useRedFlagRules.ts";
 import styles from './rules.module.css'
 
 const SEVERITIES: Severity[] = ['High', 'Medium', 'Low']
 
-const DETECTION_OPTIONS: { value: DetectionMethod; label: string }[] = [
-  { value: 'rules', label: 'Keyword or pattern rules' },
+const DETECTION_OPTIONS: { value: MatchType; label: string }[] = [
+  { value: 'phrase', label: 'Keyword or pattern rules' },
   { value: 'llm', label: 'LLM classifier' },
-  { value: 'both', label: 'Both (flag if either matches)' },
 ]
 
-const NOTIFY_OPTIONS: { key: keyof NotifySettings; label: string }[] = [
-  { key: 'therapistInApp', label: 'Assigned therapist, in-app' },
-  { key: 'therapistEmail', label: 'Assigned therapist, email (no conversation content)' },
-  { key: 'admins', label: 'Administrators' },
-]
+// const NOTIFY_OPTIONS: { key: keyof NotifySettings; label: string }[] = [
+//   { key: 'therapistInApp', label: 'Assigned therapist, in-app' },
+//   { key: 'therapistEmail', label: 'Assigned therapist, email (no conversation content)' },
+//   { key: 'admins', label: 'Administrators' },
+// ]
 
 /**
  * Edit form for one category. It keeps its own draft copy, so nothing changes until
  * "Submit for sponsor approval". The page renders it with key={category.code}, which makes
  * React start a fresh form (fresh draft) whenever a different category is selected.
  */
-export function RuleEditor({ category }: { category: RedFlagCategory }) {
-  const [draft, setDraft] = useState<RedFlagCategory>(category)
+export function RuleEditor({ rule }: { rule: RedFlagRule }) {
+  const [draft, setDraft] = useState<RedFlagRule>(rule)
   const [statusMessage, setStatusMessage] = useState('')
-  const submit = useSubmitCategory()
+  const submit = useSubmitRedFlagRules()
 
-  const update = <K extends keyof RedFlagCategory>(field: K, value: RedFlagCategory[K]) =>
+  const update = <K extends keyof RedFlagRule>(field: K, value: RedFlagRule[K]) =>
     setDraft((current) => ({ ...current, [field]: value }))
 
-  const toggleNotify = (key: keyof NotifySettings) =>
-    setDraft((current) => ({ ...current, notify: { ...current.notify, [key]: !current.notify[key] } }))
+  // const toggleNotify = (key: keyof NotifySettings) =>
+  //   setDraft((current) => ({ ...current, notify: { ...current.notify, [key]: !current.notify[key] } }))
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>)=> {
     event.preventDefault()
     submit.mutate(draft, {
-      onSuccess: () => setStatusMessage('Submitted for sponsor approval. Nothing changes until it is approved.'),
+      onSuccess: () => setStatusMessage('Red flag rule updated.'),
     })
   }
 
@@ -46,7 +45,7 @@ export function RuleEditor({ category }: { category: RedFlagCategory }) {
     <Card className={styles.editor}>
       <form onSubmit={handleSubmit} aria-labelledby="editor-title">
         <h2 id="editor-title" className={styles.editorTitle}>
-          Edit: {category.name} ({category.code})
+          Edit: {rule.name} ({rule.id})
         </h2>
 
         <div className={styles.field}>
@@ -64,28 +63,28 @@ export function RuleEditor({ category }: { category: RedFlagCategory }) {
             <label key={option.value} className={styles.choice}>
               <input
                 type="radio"
-                name="detection"
+                name="matchType"
                 value={option.value}
-                checked={draft.detection === option.value}
-                onChange={() => update('detection', option.value)}
+                checked={draft.matchType === option.value}
+                onChange={() => update('matchType', option.value)}
               />
               {option.label}
             </label>
           ))}
         </fieldset>
 
-        <fieldset className={styles.fieldset}>
-          <legend>Notify</legend>
-          {NOTIFY_OPTIONS.map((option) => (
-            <label key={option.key} className={styles.choice}>
-              <input type="checkbox" checked={draft.notify[option.key]} onChange={() => toggleNotify(option.key)} />
-              {option.label}
-            </label>
-          ))}
-        </fieldset>
+        {/*<fieldset className={styles.fieldset}>*/}
+        {/*  <legend>Notify</legend>*/}
+        {/*  {NOTIFY_OPTIONS.map((option) => (*/}
+        {/*    <label key={option.key} className={styles.choice}>*/}
+        {/*      <input type="checkbox" checked={draft.notify[option.key]} onChange={() => toggleNotify(option.key)} />*/}
+        {/*      {option.label}*/}
+        {/*    </label>*/}
+        {/*  ))}*/}
+        {/*</fieldset>*/}
 
         <Button type="submit" fullWidth className={styles.editorButton} disabled={submit.isPending}>
-          Submit for sponsor approval
+          Submit
         </Button>
 
         <p className={styles.statusNote} role="status">

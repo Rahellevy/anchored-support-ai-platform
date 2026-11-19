@@ -1,17 +1,24 @@
+import { httpClient } from "./client.ts";
 import { mockDocuments } from '../mocks/knowledgeBase'
 import { simulateNetwork } from '../mocks/simulateNetwork'
+import { USE_MOCKS } from './mockMode'
 import type {
   DocumentInput,
   KnowledgeDocument,
 } from '../types/knowledgeBase'
 
-/** TODO(backend): httpClient.get<KnowledgeDocument[]>('/admin/knowledge-base') */
+/** TODO(backend): httpClient.get<KnowledgeDocument[]>('/admins/kb') */
 export async function getDocuments(): Promise<KnowledgeDocument[]> {
-  await simulateNetwork()
-  return structuredClone(mockDocuments)
+  if (USE_MOCKS) {
+    await simulateNetwork()
+    return structuredClone(mockDocuments);
+  }
+  
+  const { data } = await httpClient.get<KnowledgeDocument[]>("/admins/kb");
+  return data;
 }
 
-/** TODO(backend): httpClient.get<KnowledgeDocument>(`/admin/knowledge-base/${id}`) */
+/** TODO(backend): httpClient.get<KnowledgeDocument>(`/admins/kb/${id}`) */
 export async function getDocument(id: string): Promise<KnowledgeDocument | null> {
   await simulateNetwork()
   const doc = mockDocuments.find((d) => d.id === id)

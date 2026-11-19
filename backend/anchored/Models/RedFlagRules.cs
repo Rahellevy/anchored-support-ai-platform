@@ -20,6 +20,7 @@ public enum Severity
 public class RedFlagRule
 {
     public int Id { get; set; }
+    public required string Name { get; set; }
     public required string Pattern { get; set; }
     public MatchType MatchType { get; set; }
     public Severity Severity { get; set; }

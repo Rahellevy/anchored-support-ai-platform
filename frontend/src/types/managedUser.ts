@@ -9,5 +9,5 @@ export interface ManagedUser {
   therapistId: string | null
   /** e.g. "Acknowledged Sep 14", "Pending", "Not required". */
   disclosure: string
-  accountStatus: 'Active' | 'Invited'
+  accountStatus: 'Active' | 'Inactive'
 }

@@ -22,15 +22,16 @@ services:
       # Double underscore = nested config key (ConnectionStrings:Default)
       ConnectionStrings__Default: Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       OpenAI__ApiKey: ${OPENAI_API_KEY}
-      OpenAI__Model: ${OPENAI_MODEL}
+      OpenAI__ChatModel: ${OPENAI_MODEL:-gpt-6-luna}   # key is ChatModel ("Model" was ignored); falls back to the appsettings model if unset
     depends_on:
       db:
         condition: service_healthy
     volumes:
       - ./logs:/app/logs
-      
+      - kb-files:/app/data/kb
+  
   frontend:
-    build: 
+    build:
       context: ./frontend
       additional_contexts:
         nginx: ./nginx
@@ -38,6 +39,7 @@ services:
       - "80:80"
     depends_on:
       - server
-    
+
 volumes:
   pgdata:
+  kb-files:

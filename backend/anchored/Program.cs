@@ -4,7 +4,9 @@ using anchored.Data;
 using anchored.Endpoints.Admin;
 using anchored.Endpoints.Auth;
 using anchored.Endpoints.Patient;
+using anchored.Endpoints.Therapist;
 using anchored.Hubs;
+using anchored.Models;
 using anchored.Setup;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
@@ -50,11 +52,21 @@ try
         o.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
+    builder.Services.AddOptions<OpenAiOptions>()
+        .BindConfiguration(OpenAiOptions.Section)
+        .ValidateDataAnnotations()
+        .ValidateOnStart();
+    
+    builder.Services.AddOptions<AiPricingOptions>()
+        .BindConfiguration(AiPricingOptions.Section);
+
+    builder.Services.AddScoped<AiUsageRecorder>();
 
     //Features:
     builder.Services.AddAuthFeature();
     builder.Services.AddChatFeature();
     builder.Services.AddRedFlagsFeature();
+    builder.Services.AddKnowledgeBaseFeature();
 
     var app = builder.Build();
 
@@ -73,6 +85,7 @@ try
     var api = app.MapGroup("/api");
     api.MapAuthEndpoints();
     api.MapPatientEndpoints();
+    api.MapTherapistEndpoints();
     api.MapAdminEndpoints();
 
     app.MapHub<ChatHub>("/hubs/chat");

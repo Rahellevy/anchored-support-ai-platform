@@ -6,7 +6,7 @@ export const mockDocuments: KnowledgeDocument[] = [
   {
     id: 'kb1',
     title: 'Office hours and how to reach your therapist',
-    category: 'Practice information',
+    category: 'PracticeInformation',
     status: 'Published',
     content:
       'Our office is open Monday to Friday, 9 AM to 5 PM. Messages sent after hours are read the next business day.\n\n' +
@@ -42,7 +42,7 @@ export const mockDocuments: KnowledgeDocument[] = [
   {
     id: 'kb4',
     title: 'Crisis and after-hours resources',
-    category: 'Support resources',
+    category: 'SupportResources',
     status: 'Published',
     content:
       'If you are in danger or thinking about harming yourself, call or text 988 (Suicide and Crisis Lifeline) or call 911.\n\n' +

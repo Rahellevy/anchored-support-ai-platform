@@ -12,6 +12,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<Conversation> Conversations => Set<Conversation>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<RedFlagRule> RedFlagRules => Set<RedFlagRule>();
+    public DbSet<KbDocument> KbDocuments => Set<KbDocument>();
+    public DbSet<KbChunk> KbChunks => Set<KbChunk>();
+    public DbSet<AiUsage> AiUsages => Set<AiUsage>();
+    public DbSet<Alert> Alerts => Set<Alert>();
+    
     // public DbSet<DisclosureAcceptance> DisclosureAcceptances => Set<DisclosureAcceptance>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -2,11 +2,16 @@ import { useState, type FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '../../components/Button'
 import { Card } from '../../components/Card'
-import { DOCUMENT_CATEGORIES, type DocumentInput, type KnowledgeDocument } from '../../types/knowledgeBase'
+import {
+  DOCUMENT_CATEGORIES,
+  type KnowledgeDocument,
+  type UploadDocumentRequest
+} from '../../types/knowledgeBase'
 import { useSaveDocument } from './useKnowledgeBase'
 import styles from './knowledgeBase.module.css'
+import {FileUploadRegion} from "./FileUploadRegion.tsx";
 
-const EMPTY: DocumentInput = { title: '', category: 'Practice information', content: '' }
+const EMPTY: UploadDocumentRequest = { file: undefined, title: '', category: 'PracticeInformation' }
 
 /**
  * Create or edit one document. Keeps its own draft; nothing is saved until a button is pressed.
@@ -16,15 +21,19 @@ export function DocumentForm({ document }: { document?: KnowledgeDocument }) {
   const navigate = useNavigate()
   const location = useLocation()
   const save = useSaveDocument()
-  const [draft, setDraft] = useState<DocumentInput>(document ?? EMPTY)
+  const [draft, setDraft] = useState<UploadDocumentRequest>(document ?? EMPTY)
   // After creating a document we move to its URL; the message comes along in the navigation state.
   const [statusMessage, setStatusMessage] = useState<string>(location.state?.message ?? '')
 
-  const update = <K extends keyof DocumentInput>(field: K, value: DocumentInput[K]) =>
+  const update = <K extends keyof UploadDocumentRequest>(field: K, value: UploadDocumentRequest[K]) =>
     setDraft((current) => ({ ...current, [field]: value }))
+  
+  const handleFileSelection = (files: File[]) => {
+    update('file', files[0]);
+  }
 
   // Which button submitted the form: "Save draft" or "Submit for approval".
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>)=> {
     event.preventDefault()
     const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null
     const submit = submitter?.value === 'submit'
@@ -69,7 +78,7 @@ export function DocumentForm({ document }: { document?: KnowledgeDocument }) {
           <select
             id="doc-category"
             value={draft.category}
-            onChange={(e) => update('category', e.target.value as DocumentInput['category'])}
+            onChange={(e) => update('category', e.target.value as UploadDocumentRequest['category'])}
           >
             {DOCUMENT_CATEGORIES.map((category) => (
               <option key={category}>{category}</option>
@@ -90,6 +99,13 @@ export function DocumentForm({ document }: { document?: KnowledgeDocument }) {
             Leave a blank line between topics. Each block becomes a passage the AI can receive.
           </p>
         </div>
+
+        <div className={styles.field}>
+          <FileUploadRegion
+              onFileSelected={handleFileSelection}
+          />
+        </div>
+        
 
         <div className={styles.actions}>
           <Button type="submit" value="submit" disabled={save.isPending}>

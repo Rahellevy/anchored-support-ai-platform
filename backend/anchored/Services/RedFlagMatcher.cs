@@ -3,7 +3,9 @@ using System.Text.RegularExpressions;
 using anchored.Data;
 using anchored.DTOs.RedFlags;
 using anchored.Models;
+using anchored.Setup;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using OpenAI.Chat;
 using Serilog;
 using ILogger = Serilog.ILogger;
@@ -15,7 +17,7 @@ namespace anchored.Services;
 /// Checks text against the enabled red-flag rules. The chat hub will call this on every
 /// incoming message; the /test endpoint lets admins try rules out before relying on them.
 /// </summary>
-public class RedFlagMatcher(AppDbContext db, ChatClient chat)
+public class RedFlagMatcher(AppDbContext db, ChatClient chat, AiUsageRecorder usageRecorder, IOptions<OpenAiOptions> aiOptions)
 {
     public static readonly ILogger s_log = Log.ForContext<RedFlagMatcher>();
     private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(100);
@@ -76,7 +78,7 @@ public class RedFlagMatcher(AppDbContext db, ChatClient chat)
             {
                 if (BuildRegex(rule.Pattern).IsMatch(text))
                 {
-                    matches.Add(new RedFlagMatch(rule.Id, rule.Pattern, rule.Severity));
+                    matches.Add(new RedFlagMatch(rule.Id, rule.Name, rule.Pattern, MatchType.Phrase, rule.Severity));
                 }
             }
             catch (RegexMatchTimeoutException)
@@ -108,12 +110,24 @@ public class RedFlagMatcher(AppDbContext db, ChatClient chat)
         {
             ChatCompletion result = await chat.CompleteChatAsync(messages, LlmOptions, ct);
             var parsed = JsonSerializer.Deserialize<LlmResult>(result.Content[0].Text, JsonSerializerOptions.Web)!;
+            
+            // Record usage
+            var usage = result.Usage;
+            await usageRecorder.RecordAsync(
+                AiPurpose.RedFlagCheck,
+                aiOptions.Value.ChatModel,
+                usage.InputTokenCount,
+                usage.InputTokenDetails?.CachedTokenCount ?? 0,
+                usage.OutputTokenCount,
+                null, // TODO: Retrieve and add userId 
+                ct
+            );
 
             return parsed.Matches
                 .DistinctBy(m => m.RuleId)
                 .Where(m => byId.ContainsKey(m.RuleId))
                 .Select(m => byId[m.RuleId] is var r
-                    ? new RedFlagMatch(r.Id, r.Pattern, r.Severity, m.Reason)
+                    ? new RedFlagMatch(r.Id, r.Name, r.Pattern, MatchType.Llm, r.Severity, m.Reason)
                     : null!);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -121,7 +135,7 @@ public class RedFlagMatcher(AppDbContext db, ChatClient chat)
             s_log.Error(ex, "LLM red-flag check failed; using keyword fallback");
             return rules
                 .Where(r => BuildRegex(r.Pattern).IsMatch(text))
-                .Select(r => new RedFlagMatch(r.Id, r.Pattern, r.Severity, "LLM unavailable; keyword fallback"));
+                .Select(r => new RedFlagMatch(r.Id, r.Name, r.Pattern, MatchType.Phrase, r.Severity, "LLM unavailable; keyword fallback"));
         }
     }
 

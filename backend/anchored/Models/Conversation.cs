@@ -11,6 +11,7 @@ public class Conversation
     public AppUser Patient { get; set; } = null!;
     public DateTimeOffset StartedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset LastMessageAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? LastReviewedAt { get; set; }
     public List<Message> Messages { get; set; } = [];
 }
 
@@ -30,6 +31,14 @@ public class Message
     public string Content { get; set; } = null!;
     public DateTimeOffset SentAt { get; set; } = DateTimeOffset.UtcNow;
 }
+
+public record ConversationDetailDto(
+    Guid Id,
+    string PatientId,
+    string PatientName,
+    List<MessageDto> Messages,
+    bool Reviewed,
+    string Summary);
 
 public record MessageDto(Guid Id, Guid ConversationId, MessageSender Sender, string Content, DateTimeOffset SentAt)
 {

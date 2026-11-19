@@ -8,6 +8,7 @@ namespace anchored.DTOs.RedFlags;
 
 public record RedFlagRuleResponse(
     int Id,
+    string Name,
     string Pattern,
     MatchType MatchType,
     Severity Severity,
@@ -16,11 +17,15 @@ public record RedFlagRuleResponse(
 )
 {
     public static RedFlagRuleResponse From(RedFlagRule r) =>
-        new(r.Id, r.Pattern, r.MatchType, r.Severity, r.Enabled, r.CreatedAt);
+        new(r.Id, r.Name, r.Pattern, r.MatchType, r.Severity, r.Enabled, r.CreatedAt);
 }
 
 
 public record CreateRedFlagRequest(
+    [Required]
+    [MaxLength(100)]
+    string Name,
+    
     [Required]
     [MaxLength(500)]
     string Pattern,
@@ -34,7 +39,13 @@ public record CreateRedFlagRequest(
 
 
 public record UpdatedRedFlagRequest(
-    [Required] [MaxLength(500)] string Pattern,
+    int Id,
+    
+    string Name,
+    
+    [Required] 
+    [MaxLength(500)] 
+    string Pattern,
 
     [JsonConverter(typeof(StringEnumConverter))]
     MatchType MatchType,
@@ -47,7 +58,9 @@ public record UpdatedRedFlagRequest(
     
 public record RedFlagMatch(
     int RuleId,
+    string Name,
     string Pattern,
+    MatchType MatchType,
     Severity Severity,
     string? Reason = null
     );

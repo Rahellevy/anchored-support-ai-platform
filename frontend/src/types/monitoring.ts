@@ -17,5 +17,4 @@ export interface MonitoringSummary {
   /** When false, patients see a notice instead of AI replies. */
   aiRepliesEnabled: boolean
   needsAttention: { label: string; count: number; to: string }[]
-  recentActivity: { at: string; who: string; what: string }[]
 }

@@ -7,12 +7,12 @@
 export interface Patient {
   id: string
   name: string
-  lastConversation: string
-  conversationsLast7Days: number
+  lastMessageAt: string | null
+  messagesLast7Days: number
   highFlags: number
   mediumFlags: number
-  unreviewedConversations: number
-  lastReviewed: string
+  needsReview: boolean
+  lastReviewedAt: string | null
   /** Where the dashboard's "Open" button goes; null if the patient has never chatted. */
-  latestConversationId: string | null
+  conversationId: string | null
 }
