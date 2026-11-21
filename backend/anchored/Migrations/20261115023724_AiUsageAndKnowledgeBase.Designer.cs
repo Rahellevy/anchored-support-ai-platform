@@ -354,7 +354,7 @@ namespace anchored.Migrations
 
                     b.Property<Vector>("Embedding")
                         .IsRequired()
-                        .HasColumnType("vector(1536");
+                        .HasColumnType("vector(1536)");
 
                     b.Property<string>("EmbeddingModel")
                         .IsRequired()

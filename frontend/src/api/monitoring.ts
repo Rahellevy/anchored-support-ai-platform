@@ -1,20 +1,48 @@
 import { mockAlerts } from '../mocks/alerts'
 import { mockDocuments } from '../mocks/knowledgeBase'
 import { mockMonitoring } from '../mocks/monitoring'
-import { mockRedFlagCategories } from '../mocks/redFlagCategories'
 import { at, simulateNetwork } from '../mocks/simulateNetwork'
 import { mockUsers } from '../mocks/users'
 import type { MonitoringSummary } from '../types/monitoring'
+import { httpClient } from './client'
+import { USE_MOCKS } from './mockMode'
+
+/** Admin endpoint: /api/admins/monitoring (Endpoints/Admin/AdminEndpoints.cs). */
+const ENDPOINTS = {
+  SUMMARY: '/admins/monitoring',
+}
 
 /**
  * Everything on the Monitoring page in one call. Counts only, never conversation content.
- * TODO(backend): httpClient.get<MonitoringSummary>('/admin/monitoring')
+ * The mock builds the same shape from the other mock arrays, so the admin pages agree.
  */
 export async function getMonitoringSummary(): Promise<MonitoringSummary> {
-  await simulateNetwork()
+  if (USE_MOCKS) {
+    await simulateNetwork()
+    return mockSummary()
+  }
+  const { data } = await httpClient.get<MonitoringSummary>(ENDPOINTS.SUMMARY)
+  return data
+}
+
+function mockSummary(): MonitoringSummary {
   const users = (role: string) => mockUsers.filter((u) => u.role === role)
   const openAlerts = mockAlerts.filter((a) => a.status === 'Open')
   const usedUsd = mockMonitoring.spending.byPurpose.reduce((sum, p) => sum + p.usd, 0)
+  const failedDocs = mockDocuments.filter((d) => d.status === 'Failed').length
+  const pendingDocs = mockDocuments.filter((d) => d.status === 'Pending').length
+
+  const needsAttention = [
+    {
+      label: 'Patients without a therapist',
+      count: users('Patient').filter((p) => !p.therapistId).length,
+      to: '/admin/users',
+    },
+    { label: 'Documents that failed processing', count: failedDocs, to: '/admin/knowledge-base' },
+  ]
+  if (usedUsd >= mockMonitoring.spending.budgetUsd * 0.8) {
+    needsAttention.push({ label: 'AI spending above 80% of budget', count: 1, to: '/admin/monitoring' })
+  }
 
   return structuredClone({
     accounts: {
@@ -29,42 +57,18 @@ export async function getMonitoringSummary(): Promise<MonitoringSummary> {
     },
     spending: { ...mockMonitoring.spending, usedUsd },
     messagesPerDay: mockMonitoring.messagesPerDay.map((count, i, all) => ({
-      date: at(all.length - 1 - i, 12, 0),
+      date: at(all.length - 1 - i, 0, 0),
       count,
     })),
-    services: mockMonitoring.services,
-    aiRepliesEnabled: mockMonitoring.aiRepliesEnabled,
-    needsAttention: [
+    services: [
+      { name: 'AI', detail: 'Responding', working: true },
       {
-        label: 'Patients without a therapist',
-        count: users('Patient').filter((p) => !p.therapistId).length,
-        to: '/admin/users',
-      },
-      {
-        label: 'Disclosures not yet accepted',
-        count: users('Patient').filter((p) => p.disclosure === 'Pending').length,
-        to: '/admin/users',
-      },
-      {
-        label: 'Documents awaiting approval',
-        count: mockDocuments.filter((d) => d.status === 'Awaiting approval').length,
-        to: '/admin/knowledge-base',
-      },
-      {
-        label: 'Red-flag categories not yet approved',
-        count: mockRedFlagCategories.filter((c) => c.approval !== 'Approved').length,
-        to: '/admin/rules',
+        name: 'Document processing',
+        detail: failedDocs > 0 ? `${failedDocs} failed` : pendingDocs > 0 ? `${pendingDocs} in queue` : 'Idle',
+        working: failedDocs === 0,
       },
     ],
-    recentActivity: mockMonitoring.recentActivity,
+    aiRepliesEnabled: mockMonitoring.aiRepliesEnabled,
+    needsAttention,
   })
-}
-
-/**
- * Turn AI replies on or off for every patient (e.g. if spending or behavior looks wrong).
- * TODO(backend): httpClient.put('/admin/settings/ai-replies', { enabled })
- */
-export async function setAiRepliesEnabled(enabled: boolean): Promise<void> {
-  await simulateNetwork()
-  mockMonitoring.aiRepliesEnabled = enabled
 }

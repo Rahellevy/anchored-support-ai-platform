@@ -212,6 +212,73 @@ namespace anchored.Migrations
                     b.ToTable("ai_usage", (string)null);
                 });
 
+            modelBuilder.Entity("anchored.Models.Alert", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("AcknowledgedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("MatchType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PatientId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("RaisedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("RelatedMessages")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("RuleId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RuleName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageId");
+
+                    b.HasIndex("RaisedAt");
+
+                    b.HasIndex("RuleId");
+
+                    b.HasIndex("PatientId", "Status");
+
+                    b.HasIndex("ConversationId", "RuleId", "Status");
+
+                    b.ToTable("alerts", (string)null);
+                });
+
             modelBuilder.Entity("anchored.Models.AppUser", b =>
                 {
                     b.Property<string>("Id")
@@ -351,7 +418,7 @@ namespace anchored.Migrations
 
                     b.Property<Vector>("Embedding")
                         .IsRequired()
-                        .HasColumnType("vector(1536");
+                        .HasColumnType("vector(1536)");
 
                     b.Property<string>("EmbeddingModel")
                         .IsRequired()
@@ -513,6 +580,10 @@ namespace anchored.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Pattern")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -600,6 +671,38 @@ namespace anchored.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("anchored.Models.Alert", b =>
+                {
+                    b.HasOne("anchored.Models.Conversation", null)
+                        .WithMany()
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("anchored.Models.Message", "Message")
+                        .WithMany()
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("anchored.Models.PatientProfile", "Patient")
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("anchored.Models.RedFlagRule", "Rule")
+                        .WithMany()
+                        .HasForeignKey("RuleId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Message");
+
+                    b.Navigation("Patient");
+
+                    b.Navigation("Rule");
                 });
 
             modelBuilder.Entity("anchored.Models.Conversation", b =>

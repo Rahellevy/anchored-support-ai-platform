@@ -79,3 +79,20 @@ export const mockConversations: ConversationDetail[] = [
     ],
   },
 ]
+
+/** When each conversation was last reviewed (null = never). Updated by markConversationReviewed in mock mode. */
+export const mockReviewedAt: Record<string, string | null> = {
+  [jordan]: at(3, 10, 0),
+  [sam]: null,
+  'c-priya-1': at(2, 21, 30),
+  'c-marcus-1': at(5, 9, 0),
+}
+
+/** Dr. Morgan Hale's patients. Elena has never chatted, so she has no conversation. */
+export const mockTherapistPatients = [
+  { id: 'p1', name: 'Jordan Avery' },
+  { id: 'p2', name: 'Sam Rivera' },
+  { id: 'p3', name: 'Priya Nair' },
+  { id: 'p4', name: 'Marcus Lee' },
+  { id: 'p5', name: 'Elena Torres' },
+]

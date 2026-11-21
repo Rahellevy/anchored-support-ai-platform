@@ -106,7 +106,7 @@ public class KbChunkConfiguration : IEntityTypeConfiguration<KbChunk>
     {
         builder.ToTable("kb_chunks");
         builder.Property(c => c.EmbeddingModel).HasMaxLength(100);
-        builder.Property(c => c.Embedding).HasColumnType("vector(1536"); // must match the embedding model
+        builder.Property(c => c.Embedding).HasColumnType("vector(1536)"); // must match the embedding model
 
         builder.HasOne(c => c.Document).WithMany(d => d.Chunks)
             .HasForeignKey(c => c.DocumentId)

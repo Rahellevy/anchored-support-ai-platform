@@ -1,27 +1,27 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getRedFlagRules, updateRedFlagRule } from '../../api/redFlagRules.ts'
-import type {updateRedFlagRuleRequest} from "../../types/redFlagRules.ts";
+import { createRedFlagRule, deleteRedFlagRule, getRedFlagRules, updateRedFlagRule } from '../../api/redFlagRules'
+import type { CreateRedFlagRuleRequest, UpdateRedFlagRuleRequest } from '../../types/redFlagRules'
 
 export const redFlagKeys = { rules: ['admin', 'red-flag-rules'] as const }
 
+export function useRedFlagRules() {
+  return useQuery({ queryKey: redFlagKeys.rules, queryFn: getRedFlagRules })
+}
 
-export const useRedFlagRules = () => {
-  const queryClient = useQueryClient();
-  
-  const getRedFlagRulesAsync = useQuery({
-    queryKey: redFlagKeys.rules,
-    queryFn: async () => await getRedFlagRules()
-  });
-  
-  const updateRedFlagRulesAsync = useMutation({
-    mutationFn: async (rule: updateRedFlagRuleRequest) => await updateRedFlagRule(rule),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: redFlagKeys.rules })
-  });
-  
-  return {
-    redFlagRules: getRedFlagRulesAsync.data,
-    isLoadingRedFlags: getRedFlagRulesAsync.isLoading,
-    updateRedFlagRule: updateRedFlagRulesAsync.mutateAsync,
-    updatingRedFlagRule: updateRedFlagRulesAsync.isPending
-  }
+/** Creates a rule when the request has no id, otherwise updates it. Refreshes the list. */
+export function useSaveRedFlagRule() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (request: CreateRedFlagRuleRequest | UpdateRedFlagRuleRequest) =>
+      'id' in request ? updateRedFlagRule(request) : createRedFlagRule(request),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: redFlagKeys.rules }),
+  })
+}
+
+export function useDeleteRedFlagRule() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteRedFlagRule,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: redFlagKeys.rules }),
+  })
 }

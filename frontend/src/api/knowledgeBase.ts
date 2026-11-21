@@ -1,107 +1,122 @@
-import { httpClient } from "./client.ts";
-import { mockDocuments } from '../mocks/knowledgeBase'
+import { isAxiosError } from 'axios'
+import { mockAddUpload, mockDocuments, mockFiles, mockProcess } from '../mocks/knowledgeBase'
 import { simulateNetwork } from '../mocks/simulateNetwork'
-import { USE_MOCKS } from './mockMode'
 import type {
-  DocumentInput,
+  KbDocumentFilters,
   KnowledgeDocument,
+  UpdateKbDocumentRequest,
+  UploadKbDocumentRequest,
 } from '../types/knowledgeBase'
+import { httpClient } from './client'
+import { USE_MOCKS } from './mockMode'
 
-/** TODO(backend): httpClient.get<KnowledgeDocument[]>('/admins/kb') */
-export async function getDocuments(): Promise<KnowledgeDocument[]> {
-  if (USE_MOCKS) {
-    await simulateNetwork()
-    return structuredClone(mockDocuments);
-  }
-  
-  const { data } = await httpClient.get<KnowledgeDocument[]>("/admins/kb");
-  return data;
+/** Admin endpoints: /api/admins/kb (Endpoints/Admin/AdminEndpoints.cs). */
+const ENDPOINTS = {
+  DOCUMENTS: '/admins/kb',
+  DOCUMENT: (id: number) => `/admins/kb/${id}`,
+  FILE: (id: number) => `/admins/kb/${id}/file`,
+  REPROCESS: (id: number) => `/admins/kb/${id}/reprocess`,
 }
 
-/** TODO(backend): httpClient.get<KnowledgeDocument>(`/admins/kb/${id}`) */
-export async function getDocument(id: string): Promise<KnowledgeDocument | null> {
-  await simulateNetwork()
-  const doc = mockDocuments.find((d) => d.id === id)
-  return doc ? structuredClone(doc) : null
+/** Uploads can be large; the default 15-second timeout is for ordinary JSON calls. */
+const UPLOAD_TIMEOUT_MS = 120_000
+
+/** All documents, newest first, optionally filtered by category and/or status. */
+export async function getDocuments(filters: KbDocumentFilters = {}): Promise<KnowledgeDocument[]> {
+  if (USE_MOCKS) {
+    await simulateNetwork()
+    return structuredClone(
+      mockDocuments
+        .filter((d) => !filters.category || d.category === filters.category)
+        .filter((d) => !filters.status || d.status === filters.status)
+        .sort((a, b) => b.uploadedAt.localeCompare(a.uploadedAt)),
+    )
+  }
+  // axios leaves undefined values out of the query string
+  const { data } = await httpClient.get<KnowledgeDocument[]>(ENDPOINTS.DOCUMENTS, { params: filters })
+  return data
+}
+
+/** One document, or null if it doesn't exist. */
+export async function getDocument(id: number): Promise<KnowledgeDocument | null> {
+  if (USE_MOCKS) {
+    await simulateNetwork()
+    const doc = mockDocuments.find((d) => d.id === id)
+    return doc ? structuredClone(doc) : null
+  }
+  try {
+    const { data } = await httpClient.get<KnowledgeDocument>(ENDPOINTS.DOCUMENT(id))
+    return data
+  } catch (error) {
+    if (isAxiosError(error) && error.response?.status === 404) return null
+    throw error
+  }
 }
 
 /**
- * Create or update a document. Saving always makes it a Draft (or Awaiting approval when submitted),
- * so the AI stops using it until Anchored approves the new text.
- * TODO(backend): POST /admin/knowledge-base (new) or PUT /admin/knowledge-base/{id}, body { ...input, submit }
+ * Uploads a file (multipart/form-data). The server saves it and queues it for processing,
+ * answering 202 with the new document in the Pending state.
  */
-export async function saveDocument({
-  input,
-  submit,
-}: {
-  input: DocumentInput
-  submit: boolean
-}): Promise<KnowledgeDocument> {
-  await simulateNetwork()
-  const existing = mockDocuments.find((d) => d.id === input.id)
-  const saved: KnowledgeDocument = {
-    id: existing?.id ?? `kb${Date.now()}`,
-    usedLast7Days: existing?.usedLast7Days ?? 0,
-    title: input.title,
-    category: input.category,
-    content: input.content,
-    status: submit ? 'Awaiting approval' : 'Draft',
-    updatedAt: new Date().toISOString(),
-    updatedBy: 'Riley Chen', // the backend takes this from the signed-in user
+export async function uploadDocument(request: UploadKbDocumentRequest): Promise<KnowledgeDocument> {
+  if (USE_MOCKS) {
+    await simulateNetwork(600)
+    return structuredClone(mockAddUpload(request.title, request.file, request.category))
   }
-  if (existing) Object.assign(existing, saved)
-  else mockDocuments.push(saved)
-  return structuredClone(saved)
+  const form = new FormData()
+  form.append('file', request.file)
+  form.append('title', request.title)
+  form.append('category', request.category)
+  // No Content-Type header: the browser sets multipart/form-data with the boundary itself.
+  const { data } = await httpClient.post<KnowledgeDocument>(ENDPOINTS.DOCUMENTS, form, { timeout: UPLOAD_TIMEOUT_MS })
+  return data
 }
 
-// /** POTENTIALLY REMOVE
-//  * Which passages would the AI receive for this patient message? Makes no AI call.
-//  * The mock scores passages by shared words; the real backend would use the same
-//  * vector search (pgvector) that runs before every AI reply.
-//  * TODO(backend): httpClient.post<QuestionTestResult>('/admin/knowledge-base/test', { question })
-//  */
-// export async function testQuestion(question: string): Promise<QuestionTestResult> {
-//   await simulateNetwork()
-//   const questionWords = new Set(wordsOf(question))
-//
-//   const scored = mockDocuments.flatMap((doc) =>
-//     doc.content.split(/\n\s*\n/).map((text) => ({
-//       doc,
-//       text,
-//       score: wordsOf(text).filter((w) => questionWords.has(w)).length,
-//     })),
-//   )
-//   const matches = scored.filter((p) => p.score > 0).sort((a, b) => b.score - a.score)
-//
-//   const passages: MatchedPassage[] = matches
-//     .filter((p) => p.doc.status === 'Published')
-//     .slice(0, 3)
-//     .map((p) => ({
-//       documentId: p.doc.id,
-//       documentTitle: p.doc.title,
-//       category: p.doc.category,
-//       text: p.text,
-//       match: strengthOf(p.score),
-//     }))
-//
-//   const unpublishedMatches = [
-//     ...new Set(matches.filter((p) => p.doc.status !== 'Published').map((p) => p.doc.title)),
-//   ]
-//
-//   return { passages, unpublishedMatches }
-// }
+/** Changes the title, category and/or enabled flag. */
+export async function updateDocument(id: number, request: UpdateKbDocumentRequest): Promise<void> {
+  if (USE_MOCKS) {
+    await simulateNetwork()
+    const doc = mockDocuments.find((d) => d.id === id)
+    if (!doc) throw new Error('Document not found.')
+    Object.assign(doc, Object.fromEntries(Object.entries(request).filter(([, value]) => value !== undefined)))
+    return
+  }
+  await httpClient.patch(ENDPOINTS.DOCUMENT(id), request)
+}
 
-// ----- mock search helpers -----
+/** Queues the document to be processed again (e.g. after a failure). 409 if it's already queued. */
+export async function reprocessDocument(id: number): Promise<void> {
+  if (USE_MOCKS) {
+    await simulateNetwork()
+    mockProcess(id)
+    return
+  }
+  await httpClient.post(ENDPOINTS.REPROCESS(id))
+}
 
-// const IGNORED = new Set(['what', 'your', 'have', 'with', 'that', 'this', 'about', 'from', 'when', 'there', 'would'])
+/** Deletes the document, its passages and the stored file. */
+export async function deleteDocument(id: number): Promise<void> {
+  if (USE_MOCKS) {
+    await simulateNetwork()
+    const index = mockDocuments.findIndex((d) => d.id === id)
+    if (index >= 0) mockDocuments.splice(index, 1)
+    mockFiles.delete(id)
+    return
+  }
+  await httpClient.delete(ENDPOINTS.DOCUMENT(id))
+}
 
-/** Lower-case words of 4+ letters, cut to 5 letters so "sleeping" matches "sleep". */
-// function wordsOf(text: string): string[] {
-//   return (text.toLowerCase().match(/[a-z]{4,}/g) ?? []).filter((w) => !IGNORED.has(w)).map((w) => w.slice(0, 5))
-// }
-//
-// function strengthOf(score: number): MatchStrength {
-//   if (score >= 3) return 'Strong'
-//   if (score === 2) return 'Good'
-//   return 'Weak'
-// }
+/**
+ * The stored file itself, as a Blob, for the preview and download link.
+ * Fetched rather than linked because the endpoint sends it as an attachment, which an
+ * iframe would download instead of showing.
+ */
+export async function getDocumentFile(id: number): Promise<Blob> {
+  if (USE_MOCKS) {
+    await simulateNetwork()
+    const file = mockFiles.get(id)
+    if (!file) throw new Error('File not found.')
+    return file.blob
+  }
+  const { data } = await httpClient.get<Blob>(ENDPOINTS.FILE(id), { responseType: 'blob', timeout: UPLOAD_TIMEOUT_MS })
+  return data
+}

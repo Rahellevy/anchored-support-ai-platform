@@ -1,68 +1,58 @@
 /**
- * Knowledge base: practice information the AI may quote in its replies.
- * Only Published documents are ever sent to the AI.
+ * Knowledge base: files whose text the AI may use in its replies.
+ * Matches the backend's KbDocumentDto and requests (Models/KnowledgeBase.cs).
+ *
+ * After upload a document is Pending while the server extracts its text and splits it into
+ * passages ("chunks"); then Ready, or Failed if no text could be read. The AI only uses
+ * documents that are Ready and enabled.
  */
-export type DocumentStatus = 'Pending' | 'Ready' | 'Published'
+export type KbStatus = 'Pending' | 'Ready' | 'Failed'
 
-export const DOCUMENT_CATEGORIES = [
-  'PracticeInformation',
-  'Educational',
-  'SupportResources',
-  'Policies',
-  'FAQ',
-] as const
-export type DocumentCategory = (typeof DOCUMENT_CATEGORIES)[number]
+/** Backend enum Models.KbCategory, in display order. */
+export const KB_CATEGORIES = ['PracticeInformation', 'Educational', 'SupportResources', 'Policies', 'FAQ'] as const
+export type KbCategory = (typeof KB_CATEGORIES)[number]
+
+export const KB_CATEGORY_LABELS: Record<KbCategory, string> = {
+  PracticeInformation: 'Practice information',
+  Educational: 'Educational',
+  SupportResources: 'Support resources',
+  Policies: 'Policies',
+  FAQ: 'FAQ',
+}
+
+/** Same list as the backend's TextExtractor.SupportedExtensions. */
+export const KB_SUPPORTED_EXTENSIONS = ['.txt', '.md', '.pdf', '.docx'] as const
 
 export interface KnowledgeDocument {
-  id: string
+  id: number
   title: string
-  filename: string
-  category: DocumentCategory
-  status: DocumentStatus
-  // /** Plain text. Blank lines separate the passages the AI can receive. */
-  // content: string
-  /** How many patient messages this document helped answer in the last 7 days. */
-  // usedLast7Days: number
-  updatedAt: string
-  // updatedBy: string
+  fileName: string
+  category: KbCategory
+  status: KbStatus
+  /** Disabled documents stay stored but the AI stops using them. */
   enabled: boolean
+  /** ISO date-time. */
+  uploadedAt: string
+  /** Number of passages the text was split into (0 until processed). */
   chunkCount: number
 }
 
-/** What the editor sends: the fields an admin can change. */
-// export interface DocumentInput {
-//   id?: string // missing = new document
-//   title: string
-//   category: DocumentCategory
-//   content: string
-// }
-
-export interface UploadDocumentRequest {
-  file?: File
-  title: string,
-  category: DocumentCategory
+/** Multipart form for POST /api/admins/kb. */
+export interface UploadKbDocumentRequest {
+  file: File
+  title: string
+  category: KbCategory
 }
 
+/** Body of PATCH /api/admins/kb/{id}. Only the fields that are set change. */
 export interface UpdateKbDocumentRequest {
   title?: string
-  category?: DocumentCategory
+  category?: KbCategory
   enabled?: boolean
 }
 
-export type MatchStrength = 'Strong' | 'Good' | 'Weak'
-
-/** One passage the AI would receive for a sample question. */
-export interface MatchedPassage {
-  documentId: string
-  documentTitle: string
-  category: DocumentCategory
-  text: string
-  match: MatchStrength
-}
-
-export interface QuestionTestResult {
-  /** Up to 3, best first. Published documents only. */
-  passages: MatchedPassage[]
-  /** Titles of unpublished documents that also matched (never sent to the AI). */
-  unpublishedMatches: string[]
+/** Filters for GET /api/admins/kb (query string). */
+export interface KbDocumentFilters {
+  category?: KbCategory
+  status?: KbStatus
 }

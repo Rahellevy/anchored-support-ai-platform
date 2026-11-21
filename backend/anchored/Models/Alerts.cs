@@ -62,7 +62,7 @@ public class AlertsConfiguration : IEntityTypeConfiguration<Alert>
             .OnDelete(DeleteBehavior.Cascade);
         builder.HasOne<Conversation>().WithMany().HasForeignKey(a => a.ConversationId)
             .OnDelete(DeleteBehavior.Cascade);
-        builder.HasOne(a => a.Message).WithMany().HasForeignKey(a => a.Message)
+        builder.HasOne(a => a.Message).WithMany().HasForeignKey(a => a.MessageId)
             .OnDelete(DeleteBehavior.Cascade);
         builder.HasOne(a => a.Rule).WithMany().HasForeignKey(a => a.RuleId)
             .OnDelete(DeleteBehavior.SetNull);

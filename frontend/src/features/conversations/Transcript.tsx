@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button } from '../../components/Button'
 import { SeverityBadge } from '../../components/SeverityBadge'
 import type { ChatMessage } from '../../types/conversation'
-import type { Alert } from '../../types/flags'
+import type { Alert } from '../../types/alerts'
 import { formatTime, pluralize } from '../../utils/format'
 import styles from './conversations.module.css'
 
@@ -52,7 +52,7 @@ export function Transcript({ messages, alerts }: { messages: ChatMessage[]; aler
               {alert && (
                 <span className={styles.flagTag}>
                   <SeverityBadge severity={alert.severity}>
-                    Flagged · {alert.category.name} · {alert.severity}
+                    Flagged · {alert.ruleName} · {alert.severity}
                   </SeverityBadge>
                 </span>
               )}

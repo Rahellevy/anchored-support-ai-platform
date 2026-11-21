@@ -1,6 +1,6 @@
 import { Button } from '../../components/Button'
 import type { Patient } from '../../types/patient'
-import { initials, pluralize } from '../../utils/format'
+import { formatDay, formatDayTime, initials, pluralize } from '../../utils/format'
 import { FlagBadges, ReviewStatusBadge } from './PatientBadges'
 import styles from './patients.module.css'
 
@@ -17,7 +17,7 @@ export function PatientTable({ patients }: { patients: Patient[] }) {
         <thead>
           <tr>
             <th scope="col">Patient</th>
-            <th scope="col">Last AI conversation</th>
+            <th scope="col">Last message</th>
             <th scope="col">Last 7 days</th>
             <th scope="col">Flags</th>
             <th scope="col">Review status</th>
@@ -49,19 +49,19 @@ export function PatientTable({ patients }: { patients: Patient[] }) {
                     </div>
                   </div>
                 </td>
-                <td>{patient.lastConversation}</td>
-                <td>{pluralize(patient.conversationsLast7Days, 'conversation')}</td>
+                <td>{patient.lastMessageAt ? formatDayTime(patient.lastMessageAt) : 'No messages yet'}</td>
+                <td>{pluralize(patient.messagesLast7Days, 'message')}</td>
                 <td>
-                  <FlagBadges high={patient.highFlags} medium={patient.mediumFlags} />
+                  <FlagBadges high={patient.highFlags} medium={patient.medFlags} />
                 </td>
                 <td>
                   <ReviewStatusBadge patient={patient} />
                 </td>
-                <td>{patient.lastReviewed}</td>
+                <td>{patient.lastReviewedAt ? formatDay(patient.lastReviewedAt) : '—'}</td>
                 <td>
-                  {/* Opens the latest conversation. TODO: a per-patient timeline page could go here instead. */}
-                  {patient.latestConversationId ? (
-                    <Button variant="outline" to={`/therapist/conversations/${patient.latestConversationId}`}>
+                  {/* Each patient has one ongoing conversation */}
+                  {patient.conversationId ? (
+                    <Button variant="outline" to={`/therapist/conversations/${patient.conversationId}`}>
                       Open
                     </Button>
                   ) : (

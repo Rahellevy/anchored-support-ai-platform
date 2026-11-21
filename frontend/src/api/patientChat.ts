@@ -10,7 +10,7 @@ import { USE_MOCKS } from './mockMode'
  * Sending messages is NOT here: that goes through the SignalR hub (features/chat/chatTransport.ts).
  */
 
-/** GET /api/conversations/mine → { id }, or null (404) if the patient has never chatted. */
+/** GET /api/patients/conversations/mine → { id }, or null (404) if the patient has never chatted. */
 export const getMyConversation = async (): Promise<{ id: string } | null> => {
   if (USE_MOCKS) {
     await simulateNetwork()
@@ -26,7 +26,7 @@ export const getMyConversation = async (): Promise<{ id: string } | null> => {
 }
 
 /**
- * POST /api/conversations → { id }. Creates the patient's conversation.
+ * POST /api/patients/conversations → { id }. Creates the patient's conversation.
  * The backend should make this safe to repeat: if one already exists, return it instead of
  * creating a second (a unique index on Conversations.PatientId guarantees it).
  * `firstName` is only used by the mock greeting.
@@ -59,6 +59,11 @@ export const getMyTherapist = async (): Promise<{ name: string } | null> => {
     await simulateNetwork()
     return { name: 'Dr. Morgan Hale' }
   }
-  const { data } = await httpClient.get<{ name: string } | null>('/patients/me/therapist')
-  return data
+  try {
+    const { data } = await httpClient.get<{ name: string }>('/patients/me/therapist')
+    return data
+  } catch (error) {
+    if (isAxiosError(error) && error.response?.status === 404) return null // no therapist assigned yet
+    throw error
+  }
 }

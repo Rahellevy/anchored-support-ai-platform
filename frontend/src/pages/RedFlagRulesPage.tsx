@@ -3,17 +3,19 @@ import { Button } from '../components/Button'
 import { PageHeader } from '../components/PageHeader'
 import { RuleEditor } from '../features/redFlagRules/RuleEditor'
 import { RulesTable } from '../features/redFlagRules/RulesTable'
-import { useRedFlagCategories } from '../features/redFlagRules/useRedFlagCategories'
+import { useRedFlagRules } from '../features/redFlagRules/useRedFlagRules'
 import styles from '../features/redFlagRules/rules.module.css'
 
-/** /admin/rules: red-flag categories, and an editor for the selected one. */
-export function RedFlagRulesPage() {
-  const { data: categories = [], isPending } = useRedFlagCategories()
-  const [selectedCode, setSelectedCode] = useState<string | null>(null)
-  const [statusMessage, setStatusMessage] = useState('')
+/** What the editor shows: a rule by id, a new rule, or (null) the first rule by default. */
+type Selection = number | 'new' | null
 
-  // Default to the first category until the admin picks one.
-  const selected = categories.find((c) => c.code === selectedCode) ?? categories[0]
+/** /admin/rules: red-flag rules, and an editor for the selected (or a new) rule. */
+export function RedFlagRulesPage() {
+  const { data: rules = [], isPending, isError } = useRedFlagRules()
+  const [selection, setSelection] = useState<Selection>(null)
+
+  const selected = selection === 'new' ? undefined : (rules.find((r) => r.id === selection) ?? rules[0])
+  const showNew = selection === 'new' || (!isPending && rules.length === 0)
 
   return (
     <>
@@ -21,30 +23,28 @@ export function RedFlagRulesPage() {
 
       <PageHeader
         title="Red-flag rules"
-        description="What gets flagged in patient conversations, how serious it is, and who is notified."
-        // TODO: new-category form
-        actions={
-          <Button onClick={() => setStatusMessage('New categories are not connected yet.')}>New category</Button>
-        }
+        description="What gets flagged in patient conversations and how serious it is. Matches raise an alert for the patient's therapist."
+        actions={<Button onClick={() => setSelection('new')}>New rule</Button>}
       />
-      {statusMessage && (
-        <p className={styles.statusNote} role="status">
-          {statusMessage}
-        </p>
-      )}
 
       <p className={styles.sponsorNotice}>
-        Draft categories proposed by the development team from common clinical risk-assessment areas. They take
-        effect only after Anchored Support Services reviews and approves them.
+        Rules decide which messages alert a therapist. Agree the wording and severities with Anchored Support Services
+        before relying on them with real patients.
       </p>
 
-      {isPending || !selected ? (
-        <p>Loading rules…</p>
-      ) : (
+      {isPending && <p>Loading rules…</p>}
+      {isError && <p role="alert">The rules couldn't be loaded.</p>}
+
+      {!isPending && !isError && (
         <div className={styles.layout}>
-          <RulesTable categories={categories} selectedCode={selected.code} onSelect={setSelectedCode} />
-          {/* key: a new category gets a fresh editor (and a fresh draft) instead of reusing the old one */}
-          <RuleEditor key={selected.code} category={selected} />
+          <RulesTable rules={rules} selectedId={showNew ? null : (selected?.id ?? null)} onSelect={setSelection} />
+          {/* key: a different selection gets a fresh editor (and a fresh draft) */}
+          <RuleEditor
+            key={showNew ? 'new' : selected?.id}
+            rule={showNew ? undefined : selected}
+            onCreated={(rule) => setSelection(rule.id)}
+            onDeleted={() => setSelection(null)}
+          />
         </div>
       )}
     </>

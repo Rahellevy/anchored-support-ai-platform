@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { Severity } from '../types/flags'
+import type { Severity } from '../types/redFlagRules'
 import { Badge, type BadgeTone } from './Badge'
 
 const TONE: Record<Severity, BadgeTone> = { High: 'danger', Medium: 'warning', Low: 'low' }

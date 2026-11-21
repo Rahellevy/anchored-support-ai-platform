@@ -78,7 +78,7 @@ namespace anchored.Migrations
                     Index = table.Column<int>(type: "integer", nullable: false),
                     Content = table.Column<string>(type: "text", nullable: false),
                     EmbeddingModel = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Embedding = table.Column<Vector>(type: "vector(1536", nullable: false)
+                    Embedding = table.Column<Vector>(type: "vector(1536)", nullable: false)
                 },
                 constraints: table =>
                 {

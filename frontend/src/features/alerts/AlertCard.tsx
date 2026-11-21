@@ -2,12 +2,13 @@ import { Badge } from '../../components/Badge'
 import { Button } from '../../components/Button'
 import { Card } from '../../components/Card'
 import { SeverityBadge } from '../../components/SeverityBadge'
-import type { Alert } from '../../types/flags'
+import type { Alert } from '../../types/alerts'
 import { formatDayTime, pluralize } from '../../utils/format'
+import { detectedByLabel } from './labels'
 import { useAcknowledgeAlert } from './useAlerts'
 import styles from './alerts.module.css'
 
-/** One alert: who, when, the flagged quote, why it was flagged, and actions. */
+/** One alert: who, when, the flagged message, why it was flagged, and actions. */
 export function AlertCard({ alert }: { alert: Alert }) {
   const acknowledge = useAcknowledgeAlert()
   const isOpen = alert.status === 'Open'
@@ -32,21 +33,20 @@ export function AlertCard({ alert }: { alert: Alert }) {
       </div>
 
       <p className={styles.quote}>
-        “{alert.excerpt.before}
-        <mark>{alert.excerpt.flagged}</mark>
-        {alert.excerpt.after}”
+        “<mark>{alert.flaggedText}</mark>”
       </p>
 
       <dl className={styles.meta}>
         <div>
-          <dt>Category</dt>
-          <dd>
-            {alert.category.name} ({alert.category.code})
-          </dd>
+          <dt>Rule</dt>
+          <dd>{alert.ruleName}</dd>
         </div>
         <div>
           <dt>Why flagged</dt>
-          <dd>{alert.detectedBy}</dd>
+          <dd>
+            {detectedByLabel(alert)}
+            {alert.reason && `: ${alert.reason}`}
+          </dd>
         </div>
         <div>
           <dt>Grouped</dt>

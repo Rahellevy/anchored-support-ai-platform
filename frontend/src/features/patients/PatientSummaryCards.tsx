@@ -12,24 +12,23 @@ export function PatientSummaryCards({ patients }: { patients: Patient[] }) {
   const sum = (pick: (p: Patient) => number) => patients.reduce((total, p) => total + pick(p), 0)
 
   const highFlags = sum((p) => p.highFlags)
-  const mediumFlags = sum((p) => p.mediumFlags)
-  const unreviewed = sum((p) => p.unreviewedConversations)
-  const patientsWithUnreviewed = patients.filter((p) => p.unreviewedConversations > 0).length
-  const activePatients = patients.filter((p) => p.conversationsLast7Days > 0).length
-  const totalConversations = sum((p) => p.conversationsLast7Days)
+  const mediumFlags = sum((p) => p.medFlags)
+  const needingReview = patients.filter((p) => p.needsReview).length
+  const activePatients = patients.filter((p) => p.messagesLast7Days > 0).length
+  const totalMessages = sum((p) => p.messagesLast7Days)
 
   return (
     <section className={styles.cards} aria-label="Summary">
       <Card as="article">
-        <h2 className={styles.cardTitle}>Flags awaiting review</h2>
+        <h2 className={styles.cardTitle}>Open flags</h2>
         <p className={styles.cardNumber}>{highFlags + mediumFlags}</p>
         <FlagBadges high={highFlags} medium={mediumFlags} />
       </Card>
 
       <Card as="article">
-        <h2 className={styles.cardTitle}>Unreviewed conversations</h2>
-        <p className={styles.cardNumber}>{unreviewed}</p>
-        <p className={styles.cardNote}>Across {pluralize(patientsWithUnreviewed, 'patient')}</p>
+        <h2 className={styles.cardTitle}>Conversations to review</h2>
+        <p className={styles.cardNumber}>{needingReview}</p>
+        <p className={styles.cardNote}>New messages since your last review</p>
       </Card>
 
       <Card as="article">
@@ -37,7 +36,7 @@ export function PatientSummaryCards({ patients }: { patients: Patient[] }) {
         <p className={styles.cardNumber}>
           {activePatients} <span className={styles.cardOf}>of {patients.length}</span>
         </p>
-        <p className={styles.cardNote}>{pluralize(totalConversations, 'conversation')} total</p>
+        <p className={styles.cardNote}>{pluralize(totalMessages, 'message')} from patients</p>
       </Card>
     </section>
   )
