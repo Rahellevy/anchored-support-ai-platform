@@ -83,8 +83,10 @@ public static class AdminEndpoints
         return TypedResults.Ok(managedUsers);
     }
 
-    public static async Task<Results<Ok<PatientProfile>, NotFound<string>, BadRequest>> AssignTherapist(string patientId, string therapistId,
-        AppDbContext db)
+    // Body: { "therapistId": "..." } to assign, { "therapistId": null } to unassign.
+    // Returns 204: serializing the PatientProfile entity would loop through its navigation properties.
+    public static async Task<Results<NoContent, NotFound<string>>> AssignTherapist(string patientId,
+        AssignTherapistRequest request, AppDbContext db)
     {
         var patient = await db.PatientProfiles.SingleOrDefaultAsync(p => p.UserId == patientId);
         if (patient is null)
@@ -92,14 +94,14 @@ public static class AdminEndpoints
             return TypedResults.NotFound($"Unable to find Patient with id {patientId}");
         }
 
-        if (await db.TherapistProfiles.FindAsync([therapistId]) is null)
+        if (request.TherapistId is not null && !await db.TherapistProfiles.AnyAsync(t => t.UserId == request.TherapistId))
         {
-            return TypedResults.NotFound($"Unable to find Therapist with id {therapistId}"); 
+            return TypedResults.NotFound($"Unable to find Therapist with id {request.TherapistId}");
         }
 
-        patient.AssignedTherapistId = therapistId;
+        patient.AssignedTherapistId = request.TherapistId;
         await db.SaveChangesAsync();
-        return TypedResults.Ok(patient);
+        return TypedResults.NoContent();
     }
 
     public static async Task<Ok<List<RedFlagRuleResponse>>> GetAll(AppDbContext db) =>
@@ -153,6 +155,7 @@ public static class AdminEndpoints
             return TypedResults.NotFound();
         }
 
+        rule.Name = request.Name;
         rule.Pattern = request.Pattern;
         rule.MatchType = request.MatchType;
         rule.Severity = request.Severity;
@@ -216,14 +219,21 @@ public static class AdminEndpoints
 
         Directory.CreateDirectory(options.Value.StoragePath);
         var storagePath = Path.Combine(options.Value.StoragePath, $"{Guid.NewGuid()}{ext}");
-        await using var stream = File.Create(storagePath);
-        await request.File.CopyToAsync(stream, ct);
+        // Block, not `using var`: the file must be closed before the worker opens it,
+        // otherwise File.Create's exclusive lock makes ingestion fail.
+        await using (var stream = File.Create(storagePath))
+        {
+            await request.File.CopyToAsync(stream, ct);
+        }
 
         var doc = new KbDocument
         {
             Title = request.Title.Trim(),
             FileName = Path.GetFileName(request.File.FileName),
-            ContentType = request.File.ContentType,
+            // Browsers often send no type for .md files; the download endpoint needs one
+            ContentType = string.IsNullOrWhiteSpace(request.File.ContentType)
+                ? "application/octet-stream"
+                : request.File.ContentType,
             StoragePath = storagePath,
             Category = request.Category,
             UploadById = user.FindFirstValue(ClaimTypes.NameIdentifier)!,
@@ -332,19 +342,22 @@ public static class AdminEndpoints
         List<ServiceStatus> services =
         [
             new("AI", "Responding", true),
-            new("Document processing", "Idle", true)
+            new("Document processing",
+                failedDocs > 0 ? $"{failedDocs} failed" : pendingDocs > 0 ? $"{pendingDocs} in queue" : "Idle",
+                failedDocs == 0)
         ];
 
         var aiRepliesEnabled = true;
 
         List<NeedsAttention> attention =
         [
-            new("Patients without a therapist", await db.PatientProfiles.CountAsync(p => p.AssignedTherapistId == null, ct), "/admins/users"),
-            new("Documents that failed processing", failedDocs, "/admins/kb")
+            // `To` is a frontend route the page links to, not an API path
+            new("Patients without a therapist", await db.PatientProfiles.CountAsync(p => p.AssignedTherapistId == null, ct), "/admin/users"),
+            new("Documents that failed processing", failedDocs, "/admin/knowledge-base")
         ];
-        
+
         if (spending.UsedUsd >= spending.BudgetUsd * 0.8m)
-            attention.Add(new("AI spending above 80% of budget", 1, "/admins/monitoring"));
+            attention.Add(new("AI spending above 80% of budget", 1, "/admin/monitoring"));
 
         return TypedResults.Ok(new MonitoringSummary(
             accounts, conversations, openAlerts, spending, perDay, services, aiRepliesEnabled, attention));

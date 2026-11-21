@@ -53,6 +53,8 @@
   --radius-pill: 999px;           /* buttons, inputs, badges */
   --radius-card: 24px;            /* cards, table */
   --radius-panel: 48px;           /* large login card */
+  --radius-small: 12px;           /* notices, previews, drop zone */
+  --radius-input: 12px;           /* text inputs, selects, textareas */
 
   /* Type */
   --font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;

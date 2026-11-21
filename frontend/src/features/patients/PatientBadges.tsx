@@ -2,7 +2,7 @@ import { Badge } from '../../components/Badge'
 import type { Patient } from '../../types/patient'
 import styles from './patients.module.css'
 
-/** "1 High" / "1 Medium" badges, or "None" if the patient has no flags. */
+/** "1 High" / "1 Medium" badges for open alerts, or "None". */
 export function FlagBadges({ high, medium }: { high: number; medium: number }) {
   if (high === 0 && medium === 0) return <Badge tone="neutral">None</Badge>
 
@@ -14,13 +14,9 @@ export function FlagBadges({ high, medium }: { high: number; medium: number }) {
   )
 }
 
-/** Review state for a patient's conversations. */
+/** Review state for the patient's conversation. */
 export function ReviewStatusBadge({ patient }: { patient: Patient }) {
-  if (patient.unreviewedConversations > 0) {
-    return <Badge tone="pending">{patient.unreviewedConversations} unreviewed</Badge>
-  }
-  if (patient.conversationsLast7Days === 0) {
-    return <Badge tone="neutral">Nothing to review</Badge>
-  }
+  if (!patient.conversationId) return <Badge tone="neutral">Nothing to review</Badge>
+  if (patient.needsReview) return <Badge tone="pending">New messages</Badge>
   return <Badge tone="success">Reviewed</Badge>
 }

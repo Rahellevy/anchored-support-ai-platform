@@ -1,21 +1,35 @@
 import { Link } from 'react-router-dom'
 import { Badge, type BadgeTone } from '../../components/Badge'
 import { Button } from '../../components/Button'
-import type { DocumentStatus, KnowledgeDocument } from '../../types/knowledgeBase'
+import { KB_CATEGORY_LABELS, type KbStatus, type KnowledgeDocument } from '../../types/knowledgeBase'
 import { formatDay, pluralize } from '../../utils/format'
 import styles from './knowledgeBase.module.css'
 
-const STATUS_TONE: Record<DocumentStatus, BadgeTone> = {
-  Published: 'success',
-  'Awaiting approval': 'pending',
-  Draft: 'warning',
+const STATUS_TONE: Record<KbStatus, BadgeTone> = {
+  Ready: 'success',
+  Pending: 'pending',
+  Failed: 'danger',
 }
 
-export function DocumentStatusBadge({ status }: { status: DocumentStatus }) {
-  return <Badge tone={STATUS_TONE[status]}>{status}</Badge>
+const STATUS_LABEL: Record<KbStatus, string> = {
+  Ready: 'Ready',
+  Pending: 'Processing…',
+  Failed: 'Failed',
 }
 
-/** Knowledge base list. Title and "Edit" both open the editor. */
+export function DocumentStatusBadge({ status }: { status: KbStatus }) {
+  return <Badge tone={STATUS_TONE[status]}>{STATUS_LABEL[status]}</Badge>
+}
+
+/** "In use" only when the AI can actually use it: processed and enabled. */
+export function AiUseBadge({ doc }: { doc: KnowledgeDocument }) {
+  if (!doc.enabled) return <Badge tone="neutral">Turned off</Badge>
+  if (doc.status === 'Failed') return <Badge tone="neutral">Not used</Badge>
+  if (doc.status !== 'Ready') return <Badge tone="neutral">Not yet</Badge>
+  return <Badge tone="success">In use</Badge>
+}
+
+/** Knowledge base list. The title and "Open" both go to the document page. */
 export function DocumentsTable({ documents }: { documents: KnowledgeDocument[] }) {
   return (
     <div className={styles.tableWrap}>
@@ -23,9 +37,10 @@ export function DocumentsTable({ documents }: { documents: KnowledgeDocument[] }
         <thead>
           <tr>
             <th scope="col">Document</th>
-            <th scope="col">Status</th>
-            <th scope="col">AI uses (7 days)</th>
-            <th scope="col">Last updated</th>
+            <th scope="col">Processing</th>
+            <th scope="col">Passages</th>
+            <th scope="col">AI use</th>
+            <th scope="col">Uploaded</th>
             <th scope="col">
               <span className="visually-hidden">Actions</span>
             </th>
@@ -38,19 +53,21 @@ export function DocumentsTable({ documents }: { documents: KnowledgeDocument[] }
                 <Link to={`/admin/knowledge-base/${doc.id}`} className={styles.docLink}>
                   {doc.title}
                 </Link>
-                <span className={styles.muted}>{doc.category}</span>
+                <span className={styles.muted}>
+                  {KB_CATEGORY_LABELS[doc.category]} · {doc.fileName}
+                </span>
               </td>
               <td>
                 <DocumentStatusBadge status={doc.status} />
               </td>
-              <td>{doc.usedLast7Days > 0 ? pluralize(doc.usedLast7Days, 'time') : 'Not used'}</td>
+              <td className={styles.nowrap}>{doc.status === 'Ready' ? pluralize(doc.chunkCount, 'passage') : '—'}</td>
               <td>
-                {formatDay(doc.updatedAt)}
-                <span className={styles.muted}>{doc.updatedBy}</span>
+                <AiUseBadge doc={doc} />
               </td>
+              <td className={styles.nowrap}>{formatDay(doc.uploadedAt)}</td>
               <td>
                 <Button variant="outline" to={`/admin/knowledge-base/${doc.id}`}>
-                  Edit<span className="visually-hidden"> {doc.title}</span>
+                  Open<span className="visually-hidden"> {doc.title}</span>
                 </Button>
               </td>
             </tr>

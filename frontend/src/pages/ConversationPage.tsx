@@ -58,13 +58,16 @@ export function ConversationPage() {
         <aside className={styles.side}>
           <FlagDetailsCard alert={mainAlert} conversationId={conversation.id} reviewed={conversation.reviewed} />
 
-          <section className={styles.sideCard} aria-labelledby="summary-heading">
-            <h2 className="visually-hidden" id="summary-heading">
-              AI-generated summary
-            </h2>
-            <Badge tone="pending">AI-generated summary</Badge>
-            <p className={styles.summaryText}>{conversation.summary}</p>
-          </section>
+          {/* The backend sends an empty summary until AI summaries are built */}
+          {conversation.summary && (
+            <section className={styles.sideCard} aria-labelledby="summary-heading">
+              <h2 className="visually-hidden" id="summary-heading">
+                AI-generated summary
+              </h2>
+              <Badge tone="pending">AI-generated summary</Badge>
+              <p className={styles.summaryText}>{conversation.summary}</p>
+            </section>
+          )}
 
           <p className={styles.auditNote}>Your viewing of this conversation is recorded in the audit log.</p>
         </aside>

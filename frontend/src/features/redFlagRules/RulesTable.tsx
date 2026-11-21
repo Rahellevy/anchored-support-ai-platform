@@ -1,65 +1,67 @@
 import { Badge } from '../../components/Badge'
 import { SeverityBadge } from '../../components/SeverityBadge'
-import type { RedFlagCategory } from '../../types/flags'
-import { APPROVAL_TONES, DETECTION_LABELS, notifyLabel } from './labels'
+import type { RedFlagRule } from '../../types/redFlagRules'
+import { MATCH_TYPE_LABELS } from './labels'
 import styles from './rules.module.css'
 
 /**
- * All red-flag categories. Clicking a row (or its name button, for keyboard users)
- * selects it for editing.
+ * All red-flag rules. Clicking a row (or its name button, for keyboard users) selects it for editing.
  */
 interface RulesTableProps {
-  categories: RedFlagCategory[]
-  selectedCode: string | null
-  onSelect: (code: string) => void
+  rules: RedFlagRule[]
+  selectedId: number | null
+  onSelect: (id: number) => void
 }
 
-export function RulesTable({ categories, selectedCode, onSelect }: RulesTableProps) {
+const SEVERITY_ORDER = { High: 0, Medium: 1, Low: 2 } as const
+
+export function RulesTable({ rules, selectedId, onSelect }: RulesTableProps) {
+  const sorted = [...rules].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || a.id - b.id)
+
   return (
     <div className={styles.tableWrap}>
       <table className={styles.table}>
         <thead>
           <tr>
-            <th scope="col">Category</th>
+            <th scope="col">Rule</th>
             <th scope="col">Severity</th>
             <th scope="col">Detection</th>
-            <th scope="col">Notifies</th>
-            <th scope="col">Sponsor approval</th>
+            <th scope="col">Status</th>
           </tr>
         </thead>
         <tbody>
-          {categories.map((category) => (
+          {sorted.map((rule) => (
             <tr
-              key={category.code}
-              className={category.code === selectedCode ? styles.selected : undefined}
-              onClick={() => onSelect(category.code)}
+              key={rule.id}
+              className={rule.id === selectedId ? styles.selected : undefined}
+              onClick={() => onSelect(rule.id)}
             >
               <td>
                 <button
                   type="button"
                   className={styles.rowButton}
-                  aria-pressed={category.code === selectedCode}
+                  aria-pressed={rule.id === selectedId}
                   onClick={(e) => {
                     e.stopPropagation() // the row's onClick would fire too
-                    onSelect(category.code)
+                    onSelect(rule.id)
                   }}
                 >
-                  {category.name}
-                  <span className={styles.code}>{category.code}</span>
+                  {rule.name}
+                  <span className={styles.code}>{rule.pattern}</span>
                 </button>
               </td>
               <td>
-                <SeverityBadge severity={category.severity} />
+                <SeverityBadge severity={rule.severity} />
               </td>
-              <td>{DETECTION_LABELS[category.detection]}</td>
-              <td>{notifyLabel(category.notify)}</td>
+              <td>{MATCH_TYPE_LABELS[rule.matchType]}</td>
               <td>
-                <Badge tone={APPROVAL_TONES[category.approval]}>{category.approval}</Badge>
+                <Badge tone={rule.enabled ? 'success' : 'neutral'}>{rule.enabled ? 'On' : 'Off'}</Badge>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {rules.length === 0 && <p className={styles.small}>No rules yet. Use “New rule” to add one.</p>}
     </div>
   )
 }

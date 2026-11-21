@@ -6,7 +6,7 @@ import styles from './users.module.css'
 export function UsersSidebar({ users }: { users: ManagedUser[] }) {
   const patients = users.filter((u) => u.role === 'Patient')
   const unassigned = patients.filter((p) => !p.therapistId).length
-  const pendingDisclosures = patients.filter((p) => p.disclosure === 'Pending').length
+  const pendingDisclosures = patients.filter((p) => p.disclosure.toLowerCase() === 'pending').length
 
   return (
     <aside className={styles.sidebar}>

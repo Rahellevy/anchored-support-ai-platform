@@ -18,9 +18,11 @@ public static class TherapistEndpoints
 
         group.MapGet("/me/patients", GetMyPatients);
         group.MapGet("/alerts", GetAlerts);
-        group.MapPost("/alerts/{id:guid}/acknowledge", AcknowledgeAlert);
-        group.MapGet("/conversations/{id:guid}", GetConversation);
-        group.MapPost("/conversations/{id:guid}/review", MarkConversationReviewed);
+        // Route parameter names must match the handler parameter names, or minimal APIs try to bind
+        // them from the query string instead and every request fails with 400.
+        group.MapPost("/alerts/{alertId:guid}/acknowledge", AcknowledgeAlert);
+        group.MapGet("/conversations/{conversationId:guid}", GetConversation);
+        group.MapPost("/conversations/{conversationId:guid}/review", MarkConversationReviewed);
 
         return api;
     }
@@ -42,8 +44,9 @@ public static class TherapistEndpoints
                     .Select(c => new { c.Id, c.LastMessageAt, c.LastReviewedAt }).FirstOrDefault(),
                 Messages = db.Messages.Count(m => m.Conversation.PatientId == p.UserId
                     && m.Sender == MessageSender.Patient && m.SentAt >= weekAgo),
-                High = db.Alerts.Count(a => a.PatientId == p.UserId && a.Severity == Severity.High),
-                Medium = db.Alerts.Count(a => a.PatientId == p.UserId && a.Severity == Severity.Medium)
+                // Open alerts only, so a patient's flag badges clear once the therapist acknowledges them
+                High = db.Alerts.Count(a => a.PatientId == p.UserId && a.Status == AlertStatus.Open && a.Severity == Severity.High),
+                Medium = db.Alerts.Count(a => a.PatientId == p.UserId && a.Status == AlertStatus.Open && a.Severity == Severity.Medium)
             }).Select(p => new PatientSummaryDto(
                 p.UserId,
                 p.Name,

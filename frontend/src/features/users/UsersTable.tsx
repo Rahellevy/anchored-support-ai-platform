@@ -16,8 +16,11 @@ interface UsersTableProps {
   onEdit: (user: ManagedUser) => void
 }
 
-const disclosureTone = (disclosure: string): BadgeTone =>
-  disclosure === 'Pending' ? 'warning' : disclosure === 'Not required' ? 'neutral' : 'success'
+/** The backend sends "Acknowledged", "Pending" or "Not Required". */
+const disclosureTone = (disclosure: string): BadgeTone => {
+  const value = disclosure.toLowerCase()
+  return value === 'pending' ? 'warning' : value === 'not required' ? 'neutral' : 'success'
+}
 
 export function UsersTable({ users, allUsers, onAssign, onEdit }: UsersTableProps) {
   const therapists = allUsers.filter((u) => u.role === 'Therapist')
@@ -67,7 +70,7 @@ export function UsersTable({ users, allUsers, onAssign, onEdit }: UsersTableProp
                 <Badge tone={disclosureTone(user.disclosure)}>{user.disclosure}</Badge>
               </td>
               <td>
-                <Badge tone={user.accountStatus === 'Invited' ? 'pending' : 'success'}>{user.accountStatus}</Badge>
+                <Badge tone={user.status === 'Active' ? 'success' : 'neutral'}>{user.status}</Badge>
               </td>
               <td>
                 <Button variant="outline" onClick={() => onEdit(user)} aria-label={`Edit ${user.name}`}>

@@ -4,10 +4,10 @@ import { pluralize } from '../../utils/format'
 import { useMyPatients } from '../patients/usePatients'
 import styles from './alerts.module.css'
 
-/** Right-hand column on the Alerts page: recent patient activity and notification settings. */
+/** Right-hand column on the Alerts page: recent patient activity and how alerts reach you. */
 export function AlertsSidebar() {
   const { data: patients = [] } = useMyPatients()
-  const byActivity = [...patients].sort((a, b) => b.conversationsLast7Days - a.conversationsLast7Days)
+  const byActivity = [...patients].sort((a, b) => b.messagesLast7Days - a.messagesLast7Days)
 
   return (
     <aside className={styles.sidebar}>
@@ -16,13 +16,13 @@ export function AlertsSidebar() {
         <ul className={styles.activity}>
           {byActivity.map((patient) => (
             <li key={patient.id}>
-              {patient.latestConversationId ? (
-                <Link to={`/therapist/conversations/${patient.latestConversationId}`}>{patient.name}</Link>
+              {patient.conversationId ? (
+                <Link to={`/therapist/conversations/${patient.conversationId}`}>{patient.name}</Link>
               ) : (
                 <span>{patient.name}</span>
               )}
               <span className={styles.muted}>
-                {patient.conversationsLast7Days > 0 ? pluralize(patient.conversationsLast7Days, 'conversation') : 'None'}
+                {patient.messagesLast7Days > 0 ? pluralize(patient.messagesLast7Days, 'message') : 'None'}
               </span>
             </li>
           ))}
@@ -30,12 +30,11 @@ export function AlertsSidebar() {
       </Card>
 
       <Card>
-        <h2 className={styles.sideTitle}>Notification settings</h2>
+        <h2 className={styles.sideTitle}>How alerts reach you</h2>
         <p className={styles.settingsText}>
-          High: in-app and email (email only says an alert is waiting; no conversation content).
+          New alerts appear on this page and in the bell count at the top. Email notifications are not set up yet.
         </p>
-        <p className={styles.settingsText}>Medium: in-app only.</p>
-        <p className={styles.muted}>Configured by your administrator</p>
+        <p className={styles.muted}>Rules are configured by your administrator</p>
       </Card>
     </aside>
   )

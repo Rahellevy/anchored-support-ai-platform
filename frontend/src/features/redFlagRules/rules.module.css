@@ -71,7 +71,14 @@
 }
 .code {
   display: block;
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+.table tbody tr.disabled {
   color: var(--color-text-muted);
 }
 
@@ -121,6 +128,44 @@
 
 .editorButton {
   margin-bottom: 10px;
+}
+
+/* Text inputs, selects and textareas in the editor */
+.input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  background: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+textarea.input {
+  min-height: 110px;
+  resize: vertical;
+}
+.hint {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+.choiceText {
+  display: flex;
+  flex-direction: column;
+}
+.choiceText small {
+  color: var(--color-text-muted);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.error {
+  font-size: 0.85rem;
+  color: var(--color-danger);
 }
 
 .statusNote {

@@ -4,12 +4,16 @@ using anchored.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using ILogger = Serilog.ILogger;
 
 namespace anchored.Hubs;
 
 [Authorize(Roles = Roles.Patient)]
 public class ChatHub(AppDbContext db, IChatResponder responder, RedFlagMatcher redFlagMatcher) : Hub
 {
+    private static readonly ILogger s_log = Log.ForContext<ChatHub>();
+
     public async Task JoinConversation(Guid conversationId)
     {
         await GetOwnedConversationAsync(conversationId);
@@ -31,8 +35,8 @@ public class ChatHub(AppDbContext db, IChatResponder responder, RedFlagMatcher r
         await db.SaveChangesAsync();
         await Clients.Group(GroupName(conversationId)).SendAsync("ReceiveMessage", MessageDto.From(message));
         
-        // TODO: RedFlagMatcher.FindMatchesAsync(content) → store hits, alert the assigned therapist
-        var matches = await redFlagMatcher.FindMatchesAsync(message.Content);
+        // Red flags: store hits as alerts for the assigned therapist
+        var matches = await redFlagMatcher.FindMatchesAsync(message.Content, Context.ConnectionAborted);
         foreach (var match in matches)
         {
             var open = await db.Alerts.FirstOrDefaultAsync(a =>
@@ -49,9 +53,23 @@ public class ChatHub(AppDbContext db, IChatResponder responder, RedFlagMatcher r
             }
         }
         
-        // Save and broadcast the AI reply
-        var response = await responder.ReplyAsync(conversationId, Context.ConnectionAborted);
-        var reply = new Message { ConversationId = conversationId, Sender = MessageSender.Assistant, Content = response.Text };
+        // Saved before the AI call, so alerts survive even if that call fails
+        if (matches.Count > 0)
+            await db.SaveChangesAsync();
+
+        // Save and broadcast the AI reply (a fixed fallback if OpenAI fails, so the patient isn't left waiting)
+        string replyText;
+        try
+        {
+            var response = await responder.ReplyAsync(conversationId, Context.ConnectionAborted);
+            replyText = response.Text;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            s_log.Error(ex, "AI reply failed for conversation {ConversationId}", conversationId);
+            replyText = "I'm having trouble responding right now. Please try again in a moment.";
+        }
+        var reply = new Message { ConversationId = conversationId, Sender = MessageSender.Assistant, Content = replyText };
         db.Messages.Add(reply);
         conversation.LastMessageAt = reply.SentAt;
         await db.SaveChangesAsync();

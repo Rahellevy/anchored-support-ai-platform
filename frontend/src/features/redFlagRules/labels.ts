@@ -1,25 +1,13 @@
-import type { ApprovalStatus, DetectionMethod, NotifySettings } from '../../types/flags'
-import type { BadgeTone } from '../../components/Badge'
+import type { MatchType } from '../../types/redFlagRules'
 
-/** Display text for the Rules table and editor. */
-
-export const DETECTION_LABELS: Record<DetectionMethod, string> = {
-  rules: 'Phrases',
-  llm: 'AI check',
-  both: 'Phrases + AI check',
+/** Display text for the backend's MatchType values. */
+export const MATCH_TYPE_LABELS: Record<MatchType, string> = {
+  Phrase: 'Phrase rule',
+  Llm: 'AI check',
 }
 
-export const APPROVAL_TONES: Record<ApprovalStatus, BadgeTone> = {
-  Draft: 'warning',
-  'Pending review': 'pending',
-  Approved: 'success',
-}
-
-/** "Therapist: in-app and email, Admins" / "Timeline only" */
-export function notifyLabel(notify: NotifySettings): string {
-  const channels = [notify.therapistInApp && 'in-app', notify.therapistEmail && 'email'].filter(Boolean)
-  const parts: string[] = []
-  if (channels.length > 0) parts.push(`Therapist: ${channels.join(' and ')}`)
-  if (notify.admins) parts.push('Admins')
-  return parts.length > 0 ? parts.join(', ') : 'Timeline only'
+/** Longer descriptions for the editor's radio buttons. */
+export const MATCH_TYPE_DESCRIPTIONS: Record<MatchType, string> = {
+  Phrase: 'Matches the exact words, ignoring case. Fast and predictable.',
+  Llm: 'An AI reads each message and decides whether it fits your description. Ignores figures of speech.',
 }

@@ -11,23 +11,14 @@ export interface ChatMessage {
   sentAt: string
 }
 
-/** One item in a patient's own list of conversations (GET /api/conversations). */
-export interface ConversationSummary {
-  id: string
-  /** ISO date-times. */
-  startedAt: string
-  lastMessageAt: string
-  /** Short excerpt of the latest message, for the list. */
-  preview: string
-}
-
-/** A conversation as a therapist reviews it. */
+/** A conversation as a therapist reviews it (the backend's ConversationDetailDto). */
 export interface ConversationDetail {
   id: string
   patientId: string
   patientName: string
   messages: ChatMessage[]
+  /** True when the therapist has reviewed it since the latest message. */
   reviewed: boolean
-  /** AI-generated summary shown in the sidebar. */
+  /** AI-generated summary. Empty until summaries are built. */
   summary: string
 }

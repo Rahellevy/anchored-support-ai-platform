@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getConversation, markConversationReviewed } from '../../api/conversations'
+import { patientKeys } from '../patients/usePatients'
 
 /** Cache keys for conversations, shared by the therapist review page and the patient chat (useChat). */
 export const conversationKeys = {
@@ -17,10 +18,15 @@ export function useConversation(conversationId: string) {
   })
 }
 
+/** Marks the conversation reviewed; the dashboard's review status updates too. */
 export function useMarkConversationReviewed(conversationId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: () => markConversationReviewed(conversationId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: conversationKeys.detail(conversationId) }),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: conversationKeys.detail(conversationId) }),
+        queryClient.invalidateQueries({ queryKey: patientKeys.mine }),
+      ]),
   })
 }

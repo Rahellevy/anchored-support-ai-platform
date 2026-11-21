@@ -7,7 +7,7 @@ import { AlertCard } from '../features/alerts/AlertCard'
 import { AlertsSidebar } from '../features/alerts/AlertsSidebar'
 import { useAlerts } from '../features/alerts/useAlerts'
 import styles from '../features/alerts/alerts.module.css'
-import type { Alert } from '../types/flags'
+import type { Alert } from '../types/alerts'
 
 type AlertFilter = 'open' | 'high' | 'medium' | 'acknowledged'
 

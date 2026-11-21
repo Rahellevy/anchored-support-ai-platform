@@ -48,6 +48,9 @@ public record PatientSummaryDto(
 
 
 // Admin DTOs
+/// <summary>Body of PUT /api/admins/patients/{patientId}/therapist. Null unassigns.</summary>
+public record AssignTherapistRequest(string? TherapistId);
+
 public record ManagedUserResponse(
     string Id,
     string Name,

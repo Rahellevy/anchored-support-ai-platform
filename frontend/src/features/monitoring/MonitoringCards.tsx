@@ -1,11 +1,8 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge } from '../../components/Badge'
-import { Button } from '../../components/Button'
 import { Card } from '../../components/Card'
 import type { MonitoringSummary } from '../../types/monitoring'
 import { formatDay, pluralize } from '../../utils/format'
-import { useSetAiReplies } from './useMonitoring'
 import styles from './monitoring.module.css'
 
 /** Cards on the Monitoring page. Each takes the part of the summary it shows. */
@@ -57,7 +54,7 @@ export function SummaryCards({ summary }: { summary: MonitoringSummary }) {
         >
           <div className={`${styles.meterFill} ${meterTone}`} style={{ width: `${percentUsed}%` }} />
         </div>
-        <p className={styles.label}>Alerts at 50%, 75% and 90%; hard stop at {usd(spending.budgetUsd)}</p>
+        <p className={styles.label}>{Math.round(percentUsed)}% of the budget used</p>
       </Card>
     </div>
   )
@@ -87,22 +84,12 @@ export function MessagesPerDayCard({ days }: { days: MonitoringSummary['messages
   )
 }
 
-/** Services and the switch that turns AI replies off for every patient. */
+/**
+ * Service health, and whether patients get AI replies.
+ * Read-only: the backend has no endpoint to switch AI replies off yet.
+ */
 export function SystemStatusCard({ summary }: { summary: MonitoringSummary }) {
-  const setAiReplies = useSetAiReplies()
-  const [statusMessage, setStatusMessage] = useState('')
   const enabled = summary.aiRepliesEnabled
-
-  function toggle() {
-    setAiReplies.mutate(!enabled, {
-      onSuccess: () =>
-        setStatusMessage(
-          enabled
-            ? 'AI replies are off. Patients see a notice to contact the office instead.'
-            : 'AI replies are back on.',
-        ),
-    })
-  }
 
   return (
     <Card as="section">
@@ -114,22 +101,17 @@ export function SystemStatusCard({ summary }: { summary: MonitoringSummary }) {
               {service.name}
               <span className={styles.label}>{service.detail}</span>
             </span>
-            <Badge tone={service.working ? 'success' : 'danger'}>{service.working ? 'Working' : 'Down'}</Badge>
+            <Badge tone={service.working ? 'success' : 'danger'}>{service.working ? 'Working' : 'Needs attention'}</Badge>
           </li>
         ))}
         <li>
           <span>
             AI replies for patients
-            <span className={styles.label}>{enabled ? 'On' : 'Off: patients see a notice instead'}</span>
+            <span className={styles.label}>{enabled ? 'Patients get AI replies' : 'Off: patients see a notice instead'}</span>
           </span>
-          <Button variant="outline" onClick={toggle} disabled={setAiReplies.isPending}>
-            {enabled ? 'Turn off' : 'Turn on'}
-          </Button>
+          <Badge tone={enabled ? 'success' : 'warning'}>{enabled ? 'On' : 'Off'}</Badge>
         </li>
       </ul>
-      <p className={styles.statusNote} role="status">
-        {statusMessage}
-      </p>
     </Card>
   )
 }
@@ -146,9 +128,9 @@ export function SpendingCard({ spending }: { spending: MonitoringSummary['spendi
         {spending.byPurpose.map((item) => {
           const share = spending.usedUsd > 0 ? Math.round((item.usd / spending.usedUsd) * 100) : 0
           return (
-            <li key={item.purpose} className={styles.spendRow}>
+            <li key={item.detail} className={styles.spendRow}>
               <span className={styles.spendText}>
-                <span>{item.purpose}</span>
+                <span>{item.detail}</span>
                 <span>
                   {usd(item.usd)} · {share}%
                 </span>

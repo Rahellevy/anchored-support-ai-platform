@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { acknowledgeAlert, getAlerts } from '../../api/alerts'
+import { patientKeys } from '../patients/usePatients'
 
 export const alertKeys = { all: ['alerts'] as const }
 
@@ -14,11 +15,18 @@ export function useOpenAlertCount() {
   return alerts.filter((alert) => alert.status === 'Open').length
 }
 
-/** Acknowledge an alert, then refetch so every screen (list, bell, conversation sidebar) updates. */
+/**
+ * Acknowledge an alert, then refetch so every screen updates: the list, the bell,
+ * the conversation sidebar, and the dashboard's flag counts (which only count open alerts).
+ */
 export function useAcknowledgeAlert() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: acknowledgeAlert,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: alertKeys.all }),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: alertKeys.all }),
+        queryClient.invalidateQueries({ queryKey: patientKeys.mine }),
+      ]),
   })
 }

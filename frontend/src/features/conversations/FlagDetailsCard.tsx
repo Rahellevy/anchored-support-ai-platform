@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { Badge } from '../../components/Badge'
 import { Button } from '../../components/Button'
 import { SeverityBadge } from '../../components/SeverityBadge'
-import type { Alert } from '../../types/flags'
-import { formatTime, pluralize } from '../../utils/format'
+import type { Alert } from '../../types/alerts'
+import { formatDayTime, pluralize } from '../../utils/format'
+import { detectedByLabel } from '../alerts/labels'
 import { useAcknowledgeAlert } from '../alerts/useAlerts'
 import { useMarkConversationReviewed } from './useConversation'
 import styles from './conversations.module.css'
@@ -42,23 +43,23 @@ export function FlagDetailsCard({ alert, conversationId, reviewed }: FlagDetails
             <SeverityBadge severity={alert.severity} />
           </dd>
 
-          <dt>Category</dt>
-          <dd>
-            {alert.category.name} ({alert.category.code})
-          </dd>
+          <dt>Rule</dt>
+          <dd>{alert.ruleName}</dd>
 
           <dt>Detected by</dt>
-          <dd>{alert.detectedBy}</dd>
+          <dd>{detectedByLabel(alert)}</dd>
+
+          {alert.reason && (
+            <>
+              <dt>Reason</dt>
+              <dd>{alert.reason}</dd>
+            </>
+          )}
 
           <dt>Message</dt>
           <dd>
-            {formatTime(alert.raisedAt)}
+            {formatDayTime(alert.raisedAt)}
             {alert.relatedMessages > 0 && `, plus ${pluralize(alert.relatedMessages, 'related message')}`}
-          </dd>
-
-          <dt>Notified</dt>
-          <dd>
-            You, {alert.notifiedVia.toLowerCase()}, {formatTime(alert.raisedAt)}
           </dd>
         </dl>
       )}

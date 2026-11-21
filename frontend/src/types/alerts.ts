@@ -1,8 +1,12 @@
-import type {MatchType, Severity} from "./redFlagRules.ts";
+import type { MatchType, Severity } from './redFlagRules'
 
-/** Red-flag types shared by alerts, conversations and the admin rules page. */
+/** Backend enum Models.AlertStatus. */
+export type AlertStatus = 'Open' | 'Acknowledged'
 
-/** One raised flag, shown on the Alerts page and in a conversation's sidebar. */
+/**
+ * One raised flag, shown on the Alerts page and in a conversation's sidebar.
+ * Same shape as the backend's AlertDto (Models/Alerts.cs).
+ */
 export interface Alert {
   id: string
   patientId: string
@@ -10,18 +14,19 @@ export interface Alert {
   conversationId: string
   /** The message that triggered the flag (highlighted in the transcript). */
   flaggedMessageId: string
-  severity: Severity
-  ruleId: number | null,
-  ruleName: string,
-  /** Human-readable, e.g. "Phrase rule H1-03 and AI check (both matched)". */
+  /** Null if the rule has since been deleted; ruleName still says what it was. */
+  ruleId: number | null
+  ruleName: string
   matchType: MatchType
-  reason?: string
-  /** ISO date-time. */
-  raisedAt: string
-  status: 'Open' | 'Acknowledged'
-  /** The quote shown on the alert card; `flagged` is highlighted. */
+  severity: Severity
+  /** Why the AI check flagged it; null for phrase rules. */
+  reason: string | null
+  /** The full text of the flagged message. */
   flaggedText: string
-  /** Other matches in the same conversation that were grouped into this alert. */
+  /** Later matches of the same rule in this conversation, grouped into this alert. */
   relatedMessages: number
-  acknowledgeAt?: string
+  status: AlertStatus
+  /** ISO date-times. */
+  raisedAt: string
+  acknowledgedAt: string | null
 }

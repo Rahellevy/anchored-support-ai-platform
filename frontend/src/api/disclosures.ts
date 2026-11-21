@@ -6,7 +6,7 @@ import {USE_MOCKS} from './mockMode'
  * Disclosures a patient must accept:
  *  - first-use:  once, before using the app at all (the "Before you start" page)
  *  - first-chat: once, before their first conversation (the note at the top of the chat)
- * The backend stores which version was accepted and when, so a new version asks again.
+ * The backend stores when each one was accepted.
  */
 export type DisclosureType = 'first-use' | 'first-chat'
 export type DisclosureTypeDto = "FirstUse" | "FirstChat";
@@ -30,7 +30,7 @@ const API_ENDPOINT = {
   GET_DISCLOSURE: "/patients/disclosures/{type}"
 } as const;
 
-/** TODO(backend): GET /api/disclosures/{type} */
+/** GET /api/patients/disclosures/{type} */
 export const getDisclosureStatus = async (type: DisclosureType): Promise<DisclosureStatus> => {
   if (USE_MOCKS) {
     await simulateNetwork(100)
@@ -45,7 +45,7 @@ export const getDisclosureStatus = async (type: DisclosureType): Promise<Disclos
   }
 }
 
-/** TODO(backend): POST /api/disclosures/{type}/accept (records the current version) */
+/** POST /api/patients/disclosures/{type}/accept */
 export const acceptDisclosure = async (type: DisclosureType): Promise<void> => {
   if (USE_MOCKS) {
     await simulateNetwork()

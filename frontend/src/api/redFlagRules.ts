@@ -1,34 +1,61 @@
-import { httpClient } from "./client.ts";
-import { mockRedFlagRules } from '../mocks/redFlagRules.ts'
-import { USE_MOCKS } from "./mockMode.ts";
+import { mockRedFlagRules } from '../mocks/redFlagRules'
 import { simulateNetwork } from '../mocks/simulateNetwork'
-import type {RedFlagRule, updateRedFlagRuleRequest} from "../types/redFlagRules.ts";
+import type { CreateRedFlagRuleRequest, RedFlagRule, UpdateRedFlagRuleRequest } from '../types/redFlagRules'
+import { httpClient } from './client'
+import { USE_MOCKS } from './mockMode'
 
-/** TODO(backend): httpClient.get<RedFlagCategory[]>('/admins/red-flag-rules') */
-export const getRedFlagRules = async (): Promise<RedFlagRule[]> => {
-  if (USE_MOCKS){
+/** Admin endpoints: /api/admins/red-flag-rules (Endpoints/Admin/AdminEndpoints.cs). */
+const ENDPOINTS = {
+  RULES: '/admins/red-flag-rules',
+  RULE: (id: number) => `/admins/red-flag-rules/${id}`,
+}
+
+/** Every rule, oldest first. */
+export async function getRedFlagRules(): Promise<RedFlagRule[]> {
+  if (USE_MOCKS) {
     await simulateNetwork()
     return structuredClone(mockRedFlagRules)
   }
-  
-  const { data } = await httpClient.get<RedFlagRule[]>("/admins/red-flag-rules");
-  return data;
+  const { data } = await httpClient.get<RedFlagRule[]>(ENDPOINTS.RULES)
+  return data
 }
 
-/**
- * TODO(backend): httpClient.put(`/admins/red-flag-rules/${ruleId}`, rule)
- */
-export const updateRedFlagRule = async (rule: updateRedFlagRuleRequest): Promise<void> => {
+/** Creates a rule (enabled). The backend answers 400 if a Phrase pattern is invalid. */
+export async function createRedFlagRule(request: CreateRedFlagRuleRequest): Promise<RedFlagRule> {
   if (USE_MOCKS) {
     await simulateNetwork()
-    // const index = mockRedFlagRules.findIndex((r) => r.id === rule.id)
-    // if (index >= 0) mockRedFlagRules[index] = { ...rule }
+    const rule: RedFlagRule = {
+      ...request,
+      id: Math.max(0, ...mockRedFlagRules.map((r) => r.id)) + 1,
+      enabled: true,
+      createdAt: new Date().toISOString(),
+    }
+    mockRedFlagRules.push(rule)
+    return structuredClone(rule)
   }
-  
-  const { data } = await httpClient.put<void>(`/admins/red-flag-rules/${rule.id}`, rule);
-  return data;
+  const { data } = await httpClient.post<RedFlagRule>(ENDPOINTS.RULES, request)
+  return data
 }
 
-// createRedFlagRule
+export async function updateRedFlagRule(request: UpdateRedFlagRuleRequest): Promise<RedFlagRule> {
+  if (USE_MOCKS) {
+    await simulateNetwork()
+    const rule = mockRedFlagRules.find((r) => r.id === request.id)
+    if (!rule) throw new Error('Rule not found.')
+    Object.assign(rule, request)
+    return structuredClone(rule)
+  }
+  const { data } = await httpClient.put<RedFlagRule>(ENDPOINTS.RULE(request.id), request)
+  return data
+}
 
-// deleteRedFlagRule
+/** Deletes a rule. Alerts it already raised are kept (they store the rule's name). */
+export async function deleteRedFlagRule(id: number): Promise<void> {
+  if (USE_MOCKS) {
+    await simulateNetwork()
+    const index = mockRedFlagRules.findIndex((r) => r.id === id)
+    if (index >= 0) mockRedFlagRules.splice(index, 1)
+    return
+  }
+  await httpClient.delete(ENDPOINTS.RULE(id))
+}

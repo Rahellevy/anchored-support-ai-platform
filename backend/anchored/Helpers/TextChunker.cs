@@ -23,9 +23,10 @@ public static class TextChunker
             }
 
             current.Append(p).Append("\n\n");
-
-            if (current.Length > 0) yield return current.ToString();
         }
+
+        // After the loop: inside it, this returned a growing copy after every paragraph (duplicate chunks)
+        if (current.Length > 0) yield return current.ToString();
     }
     
 }
