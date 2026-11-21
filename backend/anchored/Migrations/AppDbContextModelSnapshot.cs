@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Pgvector;
 using anchored.Data;
 
 #nullable disable
@@ -166,119 +165,6 @@ namespace anchored.Migrations
                     b.ToTable("admin_profiles", (string)null);
                 });
 
-            modelBuilder.Entity("anchored.Models.AiUsage", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTimeOffset>("At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("CachedInputTokens")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("CostUsd")
-                        .HasPrecision(12, 6)
-                        .HasColumnType("numeric(12,6)");
-
-                    b.Property<int>("InputTokens")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Model")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<int>("OutputTokens")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Purpose")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("At");
-
-                    b.HasIndex("UserId", "At");
-
-                    b.ToTable("ai_usage", (string)null);
-                });
-
-            modelBuilder.Entity("anchored.Models.Alert", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset?>("AcknowledgedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("ConversationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("MatchType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<Guid>("MessageId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("PatientId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("RaisedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Reason")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<int>("RelatedMessages")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("RuleId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("RuleName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("Severity")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MessageId");
-
-                    b.HasIndex("RaisedAt");
-
-                    b.HasIndex("RuleId");
-
-                    b.HasIndex("PatientId", "Status");
-
-                    b.HasIndex("ConversationId", "RuleId", "Status");
-
-                    b.ToTable("alerts", (string)null);
-                });
-
             modelBuilder.Entity("anchored.Models.AppUser", b =>
                 {
                     b.Property<string>("Id")
@@ -353,252 +239,22 @@ namespace anchored.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("anchored.Models.Conversation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("LastMessageAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset?>("LastReviewedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("PatientId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("StartedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PatientId")
-                        .IsUnique();
-
-                    b.ToTable("conversations", (string)null);
-                });
-
-            modelBuilder.Entity("anchored.Models.DisclosureAcceptance", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("AcceptedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DisclosureAcceptance");
-                });
-
-            modelBuilder.Entity("anchored.Models.KbChunk", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("DocumentId")
-                        .HasColumnType("integer");
-
-                    b.Property<Vector>("Embedding")
-                        .IsRequired()
-                        .HasColumnType("vector(1536)");
-
-                    b.Property<string>("EmbeddingModel")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<int>("Index")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Embedding");
-
-                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Embedding"), "hnsw");
-                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Embedding"), new[] { "vector_cosine_ops" });
-
-                    b.HasIndex("DocumentId", "Index")
-                        .IsUnique();
-
-                    b.ToTable("kb_chunks", (string)null);
-                });
-
-            modelBuilder.Entity("anchored.Models.KbDocument", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<bool>("Enabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<string>("StoragePath")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("UpdatedById")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UploadById")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("UploadedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Category");
-
-                    b.HasIndex("Status");
-
-                    b.HasIndex("UploadById");
-
-                    b.ToTable("kb_documents", (string)null);
-                });
-
-            modelBuilder.Entity("anchored.Models.Message", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
-
-                    b.Property<Guid>("ConversationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Sender")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<DateTimeOffset>("SentAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConversationId", "SentAt");
-
-                    b.ToTable("messages", (string)null);
-                });
-
             modelBuilder.Entity("anchored.Models.PatientProfile", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("text");
 
+                    b.Property<bool>("AckDisclosure")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("AssignedTherapistId")
                         .HasColumnType("text");
-
-                    b.Property<Guid?>("FirstChatDisclosureAckId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("FirstUseDisclosureAckId")
-                        .HasColumnType("uuid");
 
                     b.HasKey("UserId");
 
                     b.HasIndex("AssignedTherapistId");
 
-                    b.HasIndex("FirstChatDisclosureAckId");
-
-                    b.HasIndex("FirstUseDisclosureAckId");
-
                     b.ToTable("patient_profiles", (string)null);
-                });
-
-            modelBuilder.Entity("anchored.Models.RedFlagRule", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("Enabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("MatchType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Pattern")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("Severity")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Enabled");
-
-                    b.ToTable("red_flag_rules", (string)null);
                 });
 
             modelBuilder.Entity("anchored.Models.TherapistProfile", b =>
@@ -673,94 +329,12 @@ namespace anchored.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("anchored.Models.Alert", b =>
-                {
-                    b.HasOne("anchored.Models.Conversation", null)
-                        .WithMany()
-                        .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("anchored.Models.Message", "Message")
-                        .WithMany()
-                        .HasForeignKey("MessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("anchored.Models.PatientProfile", "Patient")
-                        .WithMany()
-                        .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("anchored.Models.RedFlagRule", "Rule")
-                        .WithMany()
-                        .HasForeignKey("RuleId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Message");
-
-                    b.Navigation("Patient");
-
-                    b.Navigation("Rule");
-                });
-
-            modelBuilder.Entity("anchored.Models.Conversation", b =>
-                {
-                    b.HasOne("anchored.Models.AppUser", "Patient")
-                        .WithMany()
-                        .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Patient");
-                });
-
-            modelBuilder.Entity("anchored.Models.KbChunk", b =>
-                {
-                    b.HasOne("anchored.Models.KbDocument", "Document")
-                        .WithMany("Chunks")
-                        .HasForeignKey("DocumentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Document");
-                });
-
-            modelBuilder.Entity("anchored.Models.KbDocument", b =>
-                {
-                    b.HasOne("anchored.Models.AppUser", null)
-                        .WithMany()
-                        .HasForeignKey("UploadById")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("anchored.Models.Message", b =>
-                {
-                    b.HasOne("anchored.Models.Conversation", "Conversation")
-                        .WithMany("Messages")
-                        .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Conversation");
-                });
-
             modelBuilder.Entity("anchored.Models.PatientProfile", b =>
                 {
                     b.HasOne("anchored.Models.TherapistProfile", "AssignedTherapist")
                         .WithMany("Patients")
                         .HasForeignKey("AssignedTherapistId")
                         .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("anchored.Models.DisclosureAcceptance", "FirstChatDisclosureAck")
-                        .WithMany()
-                        .HasForeignKey("FirstChatDisclosureAckId");
-
-                    b.HasOne("anchored.Models.DisclosureAcceptance", "FirstUseDisclosureAck")
-                        .WithMany()
-                        .HasForeignKey("FirstUseDisclosureAckId");
 
                     b.HasOne("anchored.Models.AppUser", "User")
                         .WithOne("PatientProfile")
@@ -769,10 +343,6 @@ namespace anchored.Migrations
                         .IsRequired();
 
                     b.Navigation("AssignedTherapist");
-
-                    b.Navigation("FirstChatDisclosureAck");
-
-                    b.Navigation("FirstUseDisclosureAck");
 
                     b.Navigation("User");
                 });
@@ -795,16 +365,6 @@ namespace anchored.Migrations
                     b.Navigation("PatientProfile");
 
                     b.Navigation("TherapistProfile");
-                });
-
-            modelBuilder.Entity("anchored.Models.Conversation", b =>
-                {
-                    b.Navigation("Messages");
-                });
-
-            modelBuilder.Entity("anchored.Models.KbDocument", b =>
-                {
-                    b.Navigation("Chunks");
                 });
 
             modelBuilder.Entity("anchored.Models.TherapistProfile", b =>

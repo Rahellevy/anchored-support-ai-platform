@@ -47,111 +47,60 @@ public static class UserSeeder
 
     public static async Task SeedAsync(IServiceProvider services)
     {
-        s_log.Information("Seeding database with users");
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-        var roles = services.GetRequiredService<RoleManager<IdentityRole>>();
-        var config = services.GetRequiredService<IConfiguration>();
-        var users = services.GetRequiredService<UserManager<AppUser>>();
-        var db = services.GetRequiredService<AppDbContext>();
-
+        // Always create ALL roles before trying to create the seed administrator.
         foreach (var role in Roles.All)
         {
-            if (!await roles.RoleExistsAsync(role))
-            {
-                await roles.CreateAsync(new IdentityRole(role));
-            }
+            if (await roleManager.RoleExistsAsync(role))
+                continue;
+
+            var result = await roleManager.CreateAsync(new IdentityRole(role));
+            if (!result.Succeeded)
+                throw new InvalidOperationException(
+                    $"Creating role '{role}' failed: " +
+                    string.Join("; ", result.Errors.Select(e => e.Description)));
         }
 
-        // ----- Main accounts (credentials from config) -----
-        var admin = await AddUser(Roles.Admin, config, users);
-        var therapist = await AddUser(Roles.Therapist, config, users);
-        var patient = await AddUser(Roles.Patient, config, users);
+        var config = services.GetRequiredService<IConfiguration>();
+        var adminEmail = config["SeedAdmin:Email"]?.Trim();
+        var adminPassword = config["SeedAdmin:Password"];
 
-        await EnsureProfileAsync(db, admin.Id, Roles.Admin, therapistId: null);
-        await EnsureProfileAsync(db, therapist.Id, Roles.Therapist, therapistId: null);
-        await EnsureProfileAsync(db, patient.Id, Roles.Patient, therapistId: therapist.Id);
-        await db.SaveChangesAsync(); // therapist profiles must exist before patients are assigned to them
+        // No seed-admin credentials? The roles are still available for registration.
+        if (string.IsNullOrWhiteSpace(adminEmail) ||
+            string.IsNullOrWhiteSpace(adminPassword))
+            return;
 
-        // ----- Extra test accounts (one shared password) -----
-        var testPassword = config["Seed:TestUsersPassword"];
-        if (string.IsNullOrWhiteSpace(testPassword)) testPassword = DefaultTestPassword;
-
-        var idsByEmail = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        var userManager = services.GetRequiredService<UserManager<AppUser>>();
+        var existing = await userManager.FindByEmailAsync(adminEmail);
+        if (existing is not null)
         {
-            [MainTherapist] = therapist.Id,
+            // Never silently promote an existing patient/therapist just because
+            // its email happens to match the configured seed-admin email.
+            if (!await userManager.IsInRoleAsync(existing, Roles.Admin))
+                throw new InvalidOperationException(
+                    "Seed admin email is already registered to a non-admin account.");
+            return;
+        }
+
+        var admin = new AppUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            FirstName = "Admin",
+            LastName = "Account"
         };
 
-        foreach (var testUser in TestUsers)
-        {
-            var user = await CreateUserAsync(users, testUser.Email, testPassword, testUser.FirstName,
-                testUser.LastName, testUser.Role);
-            idsByEmail[testUser.Email] = user.Id;
-
-            var therapistId = testUser.TherapistEmail is { } email ? idsByEmail[email] : null;
-            await EnsureProfileAsync(db, user.Id, testUser.Role, therapistId);
-
-            // Save as we go, so a therapist's profile exists before any patient references it
-            await db.SaveChangesAsync();
-        }
-
-        s_log.Information("Seed data complete. Extra test accounts use password {Password}", testPassword);
-    }
-
-    /// <summary>One of the three main accounts, with email and password from config (Seed:{role}:...).</summary>
-    public static async Task<AppUser> AddUser(string role, IConfiguration config, UserManager<AppUser> users)
-    {
-        var userEmail = config[$"Seed:{role}:Email"];
-        var userPassword = config[$"Seed:{role}:Password"];
-        if (string.IsNullOrWhiteSpace(userEmail) || string.IsNullOrWhiteSpace(userPassword))
-        {
-            throw new Exception($"Email and or Password set for {role} is null or empty");
-        }
-
-        var (firstName, lastName) = role switch
-        {
-            Roles.Admin => ("Riley", "Chen"),
-            Roles.Therapist => ("Morgan", "Hale"),
-            Roles.Patient => ("Jordan", "Avery"),
-            _ => throw new Exception($"No role exists for {role}")
-        };
-
-        return await CreateUserAsync(users, userEmail, userPassword, firstName, lastName, role);
-    }
-
-    /// <summary>Creates the user and adds the role, or returns the existing user with that email.</summary>
-    private static async Task<AppUser> CreateUserAsync(UserManager<AppUser> users, string email, string password,
-        string firstName, string lastName, string role)
-    {
-        if (await users.FindByEmailAsync(email) is { } existingUser)
-        {
-            // Repairs a half-finished earlier run where the user was created but the role wasn't added
-            if (!await users.IsInRoleAsync(existingUser, role))
-                await users.AddToRoleAsync(existingUser, role);
-            return existingUser;
-        }
-
-        s_log.Information("Seeding {Role} {Email}", role, email);
-
-        var user = new AppUser { UserName = email, Email = email, FirstName = firstName, LastName = lastName };
-        var created = await users.CreateAsync(user, password);
+        var created = await userManager.CreateAsync(admin, adminPassword);
         if (!created.Succeeded)
-        {
             throw new InvalidOperationException(
-                $"Seeding {email} failed: " + string.Join("; ", created.Errors.Select(e => e.Description)));
-        }
+                "Creating seed admin failed: " +
+                string.Join("; ", created.Errors.Select(e => e.Description)));
 
-        await users.AddToRoleAsync(user, role);
-        return user;
-    }
-
-    /// <summary>Adds the role's profile row if it's missing. Doesn't change existing profiles.</summary>
-    private static async Task EnsureProfileAsync(AppDbContext db, string userId, string role, string? therapistId)
-    {
-        if (role == Roles.Admin && !await db.AdminProfiles.AnyAsync(a => a.UserId == userId))
-            db.AdminProfiles.Add(new AdminProfile { UserId = userId });
-        else if (role == Roles.Therapist && !await db.TherapistProfiles.AnyAsync(t => t.UserId == userId))
-            db.TherapistProfiles.Add(new TherapistProfile { UserId = userId });
-        else if (role == Roles.Patient && !await db.PatientProfiles.AnyAsync(p => p.UserId == userId))
-            db.PatientProfiles.Add(new PatientProfile { UserId = userId, AssignedTherapistId = therapistId });
+        var assigned = await userManager.AddToRoleAsync(admin, Roles.Admin);
+        if (!assigned.Succeeded)
+            throw new InvalidOperationException(
+                "Assigning Admin role failed: " +
+                string.Join("; ", assigned.Errors.Select(e => e.Description)));
     }
 }
