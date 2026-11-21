@@ -1,0 +1,7 @@
+.banner {
+  padding: 10px 16px;
+  background: var(--color-plum-dark);
+  color: var(--color-text-inverse);
+  text-align: center;
+  font-size: 0.9rem;
+}

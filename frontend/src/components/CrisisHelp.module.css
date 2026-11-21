@@ -1,0 +1,11 @@
+.help {
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-input);
+  background: var(--color-crisis-bg);
+  color: var(--color-crisis-text);
+}
+
+.help strong {
+  color: var(--color-crisis-strong);
+}

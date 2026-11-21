@@ -1,122 +1,77 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { ProtectedRoute } from './components/ProtectedRoute'
+import { RequireDisclosure } from './components/RequireDisclosure'
+import { useAuth } from './hooks/useAuth'
+import { AdminLayout } from './pages/AdminLayout'
+import { AlertsPage } from './pages/AlertsPage'
+import { ConversationPage } from './pages/ConversationPage'
+import { KnowledgeBaseDocumentPage } from './pages/KnowledgeBaseDocumentPage'
+import { KnowledgeBasePage } from './pages/KnowledgeBasePage'
+import { LoginPage } from './pages/LoginPage'
+import { MonitoringPage } from './pages/MonitoringPage'
+import { PatientChatPage } from './pages/PatientChatPage'
+import { PatientDisclosurePage } from './pages/PatientDisclosurePage'
+import { PatientHomePage } from './pages/PatientHomePage'
+import { RedFlagRulesPage } from './pages/RedFlagRulesPage'
+import { TherapistDashboardPage } from './pages/TherapistDashboardPage'
+import { TherapistLayout } from './pages/TherapistLayout'
+import { UsersPage } from './pages/UsersPage'
+import { homePathFor } from './utils/homePath'
 
-function App() {
-  const [count, setCount] = useState(0)
+/**
+ * Every URL in the app.
+ *
+ * Nesting works in two layers:
+ *  - ProtectedRoute checks the user's role, then renders its child route.
+ *  - A layout (TherapistLayout, AdminLayout) draws the header + banner, and the matched
+ *    page renders inside it. So pages only contain their own content.
+ *
+ * To add a page: create it in src/pages/, then add a <Route> inside the right layout.
+ */
+export function App() {
+    return (
+        <Routes>
+            <Route path="/login" element={<LoginPage />} />
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+            {/* Therapist portal */}
+            <Route element={<ProtectedRoute allow={['Therapist']} />}>
+                <Route path="/therapist" element={<TherapistLayout />}>
+                    <Route index element={<TherapistDashboardPage />} />
+                    <Route path="alerts" element={<AlertsPage />} />
+                    <Route path="conversations/:conversationId" element={<ConversationPage />} />
+                </Route>
+            </Route>
 
-      <div className="ticks"></div>
+            {/* Admin portal */}
+            <Route element={<ProtectedRoute allow={['Admin']} />}>
+                <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<Navigate to="users" replace />} />
+                    <Route path="users" element={<UsersPage />} />
+                    <Route path="rules" element={<RedFlagRulesPage />} />
+                    <Route path="knowledge-base" element={<KnowledgeBasePage />} />
+                    <Route path="knowledge-base/new" element={<KnowledgeBaseDocumentPage />} />
+                    <Route path="knowledge-base/:documentId" element={<KnowledgeBaseDocumentPage />} />
+                    <Route path="monitoring" element={<MonitoringPage />} />
+                </Route>
+            </Route>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+            {/* Patient portal: disclosure first, then everything else */}
+            <Route element={<ProtectedRoute allow={['Patient']} />}>
+                <Route path="/patient/welcome" element={<PatientDisclosurePage />} />
+                <Route element={<RequireDisclosure />}>
+                    <Route path="/patient" element={<PatientHomePage />} />
+                    <Route path="/patient/chat" element={<PatientChatPage />} />
+                </Route>
+            </Route>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+            {/* Any other URL: send the user to their home page (or the login page) */}
+            <Route path="*" element={<HomeRedirect />} />
+        </Routes>
+    )
 }
 
-export default App
+function HomeRedirect() {
+    const { user, isLoading } = useAuth()
+    if (isLoading) return null
+    return <Navigate to={(user && homePathFor(user)) ?? '/login'} replace />
+}

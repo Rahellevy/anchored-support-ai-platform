@@ -4,6 +4,9 @@
 # Log file
 *.log
 
+# Prod environment file
+.env
+
 # BlueJ files
 *.ctxt
 
@@ -19,9 +22,14 @@
 *.tar.gz
 *.rar
 
+logs/
 bin/
 obj/
 .idea/
+
+.DS_Store
+*.DotSettings.user
+/Folder.DotSettings.user
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*

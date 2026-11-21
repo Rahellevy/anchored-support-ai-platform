@@ -1,0 +1,187 @@
+/* Styles for the admin Monitoring page (MonitoringCards.tsx). */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* Two cards side by side; one column on small screens */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+.big {
+  margin: 4px 0;
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-plum);
+}
+.of {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.title {
+  margin-bottom: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-plum);
+}
+.cardHead .title {
+  margin-bottom: 0;
+}
+
+/* ----- Budget meter and spending bars ----- */
+.meter {
+  display: block;
+  height: 10px;
+  margin: 8px 0;
+  border-radius: var(--radius-pill);
+  background: var(--badge-neutral-bg);
+  overflow: hidden;
+}
+.meterFill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--color-plum);
+}
+.meterWarning {
+  background: var(--color-warning-accent);
+}
+.meterDanger {
+  background: var(--color-danger);
+}
+
+/* ----- Bar chart ----- */
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 200px;
+}
+.barColumn {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+}
+.bar {
+  width: 100%;
+  max-width: 44px;
+  min-height: 2px;
+  border-radius: 8px 8px 0 0;
+  background: var(--color-plum);
+}
+.barValue,
+.barLabel {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+/* ----- Label/value rows (status, attention, spending) ----- */
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rows li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+}
+.rows li.spendRow {
+  display: block;
+}
+.spendText {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.link {
+  color: var(--color-text);
+}
+.link:hover {
+  color: var(--color-plum);
+}
+.statusNote {
+  min-height: 1.3em;
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* ----- Activity table ----- */
+.tableWrap {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+}
+.table th {
+  padding: 8px 10px 8px 0;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+.table td {
+  padding: 10px 10px 10px 0;
+  vertical-align: top;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.9rem;
+}
+.nowrap {
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 560px) {
+  .stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

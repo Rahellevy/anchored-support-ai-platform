@@ -1,0 +1,55 @@
+/* Full-screen background: rose glow over the shared page gradient */
+.page {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 65% 60% at 50% 50%, rgb(var(--color-rose-rgb) / 0.9), transparent 75%),
+    var(--bg-page);
+}
+
+/* Faded logo watermark behind the card */
+.page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("../assets/logo.png") center / min(1100px, 120vw) no-repeat;
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+/* Frosted-glass card */
+.card {
+  position: relative; /* sits above the watermark */
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 24px 48px;
+  border-radius: var(--radius-panel);
+  background: var(--color-surface-glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* Safari */
+}
+
+.logo {
+  width: 160px;
+  height: auto;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 12px;
+  }
+  .card {
+    padding: 28px 16px 32px;
+    border-radius: 32px;
+  }
+  .logo {
+    width: 120px;
+  }
+}

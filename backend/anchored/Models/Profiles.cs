@@ -10,7 +10,8 @@ public class PatientProfile
     // public DateOnly DateOfBirth { get; set; }
     public string? AssignedTherapistId { get; set; }
     public TherapistProfile? AssignedTherapist { get; set; }
-    public bool AckDisclosure { get; set; } = false;
+    public DisclosureAcceptance? FirstUseDisclosureAck { get; set; }
+    public DisclosureAcceptance? FirstChatDisclosureAck { get; set; }
 }
 
 public class TherapistProfile
@@ -35,12 +36,16 @@ public class PatientProfileConfiguration : IEntityTypeConfiguration<PatientProfi
         builder.HasOne(p => p.User)
             .WithOne(u => u.PatientProfile)
             .HasForeignKey<PatientProfile>(p => p.UserId)
-            .OnDelete(DeleteBehavior.Cascade);                       // delete user -> delete profile
+            .OnDelete(DeleteBehavior.Cascade);              // delete user -> delete profile
 
         builder.HasOne(p => p.AssignedTherapist)
             .WithMany(t => t.Patients)
             .HasForeignKey(p => p.AssignedTherapistId)
-            .OnDelete(DeleteBehavior.SetNull);                       // therapist leaves -> patient unassigned
+            .OnDelete(DeleteBehavior.SetNull);             // therapist leaves -> patient unassigned
+
+        builder.HasOne(p => p.FirstUseDisclosureAck);
+
+        builder.HasOne(p => p.FirstChatDisclosureAck);
     }
 }
 
